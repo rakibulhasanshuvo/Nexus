@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -8,6 +9,8 @@ import {
   Library, Clock, LayoutDashboard, MapPin, Menu, X, ChevronRight
 } from 'lucide-react';
 import { ThemeToggle } from '../../components/ThemeToggle';
+import { createClient } from '@/lib/supabase/client';
+
 
 interface LayoutShellProps {
   children: React.ReactNode;
@@ -15,8 +18,26 @@ interface LayoutShellProps {
 
 const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
   const pathname = usePathname();
+  const [user, setUser] = useState<any>(null);
+  const supabase = createClient();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase.auth]);
 
   const navItems = [
     { id: 'dashboard', label: 'Home', icon: Home, href: '/' },
@@ -105,6 +126,29 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
           <div className="border-t border-[var(--border-subtle)] pt-2">
              <ThemeToggle />
           </div>
+        </div>
+
+
+        {/* User Auth Section */}
+        <div className="px-4 pb-2">
+          {user ? (
+            <div className="p-3 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)] flex flex-col gap-2">
+              <div className="flex items-center gap-3">
+                 {user.user_metadata?.avatar_url ? (
+                    <img src={user.user_metadata.avatar_url} alt="Profile" className="w-8 h-8 rounded-full border border-[var(--border-subtle)]" />
+                 ) : (
+                    <div className="w-8 h-8 rounded-full bg-[var(--text-primary)] text-[var(--bg-primary)] flex items-center justify-center font-bold text-xs">{user.email?.charAt(0).toUpperCase()}</div>
+                 )}
+                 <div className="flex-1 min-w-0">
+                   <p className="text-[12px] font-bold text-[var(--text-primary)] truncate">{user.user_metadata?.full_name || "Student"}</p>
+                   <p className="text-[10px] text-[var(--text-secondary)] truncate">{user.email}</p>
+                 </div>
+              </div>
+              <button aria-label="Sign out" onClick={() => supabase.auth.signOut()} className="w-full py-1.5 rounded-xl bg-[var(--danger)]/10 text-[var(--danger)] text-[11px] font-bold hover:bg-[var(--danger)]/20 transition-colors">Sign Out</button>
+            </div>
+          ) : (
+             <Link href="/login" className="flex items-center justify-center w-full py-2.5 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[12px] font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md">Sign In</Link>
+          )}
         </div>
 
         {/* AI Status Stick */}

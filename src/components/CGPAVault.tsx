@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAcademicStats } from '@/hooks/useAcademicStats';
+import { useSupabaseSync } from '@/hooks/supabase/useSupabaseSync';
 import { VaultView } from './vault/VaultView';
 import { PredictorView } from './vault/PredictorView';
 import { TranscriptView } from './vault/TranscriptView';
@@ -14,6 +15,7 @@ import { TranscriptView } from './vault/TranscriptView';
 const CGPAVault: React.FC = () => {
   const [view, setView] = useState<'vault' | 'predictor' | 'transcript'>('vault');
   const { results, cgpa, totalCredits, progress, standing, categories, setResults } = useAcademicStats();
+  const { isSyncing } = useSupabaseSync();
 
   const handleAddResult = (semester: number, gpa: number, credits: number) => {
     const existing = results.filter(r => r.semester !== semester);
@@ -36,7 +38,7 @@ const CGPAVault: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-3">
             <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Academic Central</h2>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">v3.5 Refactor</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">v3.5 Refactor {isSyncing && "• Syncing DB..."}</span>
           </div>
         </div>
 

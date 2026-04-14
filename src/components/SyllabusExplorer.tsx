@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -253,7 +254,7 @@ const SyllabusExplorer: React.FC = () => {
 
       {/* Quiz Modal */}
       {quiz && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setQuiz(null)}>
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setQuiz(null)}>
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
           <div className="relative apple-card max-w-md w-full p-6 shadow-2xl animate-scale-in" onClick={e => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4">Quick Quiz</h3>

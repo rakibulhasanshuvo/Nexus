@@ -144,7 +144,7 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
           >
             <div className="flex items-center justify-between mb-10">
               <span className="font-bold text-lg text-[var(--text-primary)]">Nexus</span>
-              <button onClick={() => setIsMobileMenuOpen(false)}>
+              <button aria-label="Close menu" onClick={() => setIsMobileMenuOpen(false)}>
                 <X className="w-6 h-6 text-[var(--text-primary)]" />
               </button>
             </div>

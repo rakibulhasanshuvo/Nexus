@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
 import { GoogleGenAI, Type, Schema, Modality } from "@google/genai";

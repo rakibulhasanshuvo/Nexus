@@ -9,7 +9,7 @@ interface PredictorViewProps {
   // Empty for now, but good to have the interface
 }
 
-export const PredictorView: React.FC<PredictorViewProps> = () => {
+export const PredictorView: React.FC = () => {
   const [selectedSemester, setSelectedSemester] = useState(0);
   const [caMarks, setCaMarks] = useState<Record<string, string>>({});
   const [finalMarks, setFinalMarks] = useState<Record<string, string>>({});

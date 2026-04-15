@@ -8,6 +8,7 @@ import {
   Library, Clock, LayoutDashboard, MapPin, Menu, X, ChevronRight
 } from 'lucide-react';
 import { ThemeToggle } from '../../components/ThemeToggle';
+import { APIKeyManager } from '../../components/APIKeyManager';
 
 interface LayoutShellProps {
   children: React.ReactNode;
@@ -100,15 +101,16 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
           </div>
         </div>
 
-        {/* Theme Settings Tool */}
+        {/* Settings & Tools */}
         <div className="px-4 pb-2">
-          <div className="border-t border-[var(--border-subtle)] pt-2">
+          <div className="border-t border-[var(--border-subtle)] pt-4 space-y-2">
+             <APIKeyManager />
              <ThemeToggle />
           </div>
         </div>
 
         {/* AI Status Stick */}
-        <div className="p-6 pt-0">
+        <div className="p-6 pt-2">
           <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-[var(--bg-secondary)]/50 border border-[var(--border-subtle)] shadow-sm">
             <div className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse" />
             <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Counselor Online</span>
@@ -165,7 +167,8 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
                 </Link>
               ))}
             </div>
-            <div className="mt-8 border-t border-[var(--border-subtle)] pt-4">
+            <div className="mt-8 border-t border-[var(--border-subtle)] pt-4 space-y-4">
+              <APIKeyManager />
               <ThemeToggle />
             </div>
           </div>

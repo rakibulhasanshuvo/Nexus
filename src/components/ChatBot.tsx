@@ -183,7 +183,7 @@ const ChatBot: React.FC = () => {
               <div className={`w-16 h-16 rounded-3xl bg-gradient-to-br ${modeThemes[mode].color} flex items-center justify-center mb-6 shadow-[var(--card-shadow-elevated)] scale-110`}>
                 <Sparkles className="w-10 h-10 text-[var(--bg-primary)]" />
               </div>
-              <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight mb-3">Welcome to Nexus AI</h3>
+              <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight mb-3">Welcome to Vortexa AI</h3>
               <p className="text-[13px] font-medium text-[var(--text-tertiary)] leading-relaxed mb-10">
                 I assist BOU students with exam strategy, degree planning, and assignments. How can I help you today?
               </p>

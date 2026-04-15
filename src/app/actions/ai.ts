@@ -1,5 +1,6 @@
 "use server";
 
+import { randomInt } from "node:crypto";
 import { GoogleGenAI, Type, Schema, Modality } from "@google/genai";
 import { StructuredTutorial, ExamRoutineItem } from "@/lib/types";
 
@@ -31,7 +32,7 @@ function getClient(userApiKey?: string) {
   }
 
   // Pick a random key from the available keys
-  const randomKey = availableKeys[Math.floor(Math.random() * availableKeys.length)];
+  const randomKey = availableKeys[randomInt(availableKeys.length)];
   return new GoogleGenAI({ apiKey: randomKey });
 }
 

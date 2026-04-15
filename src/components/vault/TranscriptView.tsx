@@ -131,7 +131,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
       </div>
 
       <div className="p-8 bg-[var(--bg-tertiary)]/50 text-[10px] font-bold text-[var(--text-tertiary)] text-center uppercase tracking-[0.3em] italic border-t border-[var(--border-subtle)]">
-          Nexus Academic Record Ecosystem · BOU Unit 1.0
+          Vortexa Academic Record Ecosystem · BOU Unit 1.0
       </div>
     </motion.div>
   );

@@ -47,7 +47,7 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
               <GraduationCap className="w-5 h-5 text-[var(--bg-primary)]" />
             </div>
             <div>
-              <h1 className="font-bold text-[15px] tracking-tight text-[var(--text-primary)] leading-none">Nexus</h1>
+              <h1 className="font-bold text-[15px] tracking-tight text-[var(--text-primary)] leading-none">Vortexa</h1>
               <p className="text-[10px] font-bold text-[var(--text-tertiary)] mt-1.5 uppercase tracking-widest opacity-60">Study Pilot</p>
             </div>
           </div>
@@ -145,7 +145,7 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-10">
-              <span className="font-bold text-lg text-[var(--text-primary)]">Nexus</span>
+              <span className="font-bold text-lg text-[var(--text-primary)]">Vortexa</span>
               <button onClick={() => setIsMobileMenuOpen(false)}>
                 <X className="w-6 h-6 text-[var(--text-primary)]" />
               </button>

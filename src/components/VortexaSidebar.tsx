@@ -9,14 +9,14 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface NexusSidebarProps {
+interface VortexaSidebarProps {
   stats: {
     cgpa: number;
     credits: number;
   };
 }
 
-const NexusSidebar: React.FC<NexusSidebarProps> = ({ stats }) => {
+const VortexaSidebar: React.FC<VortexaSidebarProps> = ({ stats }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const allCircles = [
@@ -150,4 +150,4 @@ const NexusSidebar: React.FC<NexusSidebarProps> = ({ stats }) => {
 
 
 
-export default NexusSidebar;
+export default VortexaSidebar;

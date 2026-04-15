@@ -1,6 +1,6 @@
 # BOU Study Pilot - Architecture & Roadmap Audit
 
-This document serves as a comprehensive architectural review of the "Nexus Study Pilot" application, evaluating its current state and providing recommendations for future phases outlined in the `BACKEND.md` roadmap.
+This document serves as a comprehensive architectural review of the "Vortexa Study Pilot" application, evaluating its current state and providing recommendations for future phases outlined in the `BACKEND.md` roadmap.
 
 ## 1. Current State Assessment
 
@@ -15,7 +15,7 @@ The application is built with Next.js 15 (App Router), React 19, Tailwind CSS v4
 
 ### Areas for Improvement / Technical Debt
 *   **Missing Error Boundaries & Suspense:** As noted in Phase 2 of the roadmap, the application lacks global and route-specific error handling (`error.tsx`) and loading states (`loading.tsx`). In a heavily data-driven/AI application, network delays or AI service failures need robust fallback UIs.
-*   **Hardcoded Data:** The dashboard relies on mock data (`Dashboard.tsx` -> `NexusFeed.tsx`).
+*   **Hardcoded Data:** The dashboard relies on mock data (`Dashboard.tsx` -> `VortexaFeed.tsx`).
 *   **Client-Side Persistence:** The application still heavily relies on `localStorage` for critical data (chat history, academic results). This means data doesn't sync across devices and is lost if browser data is cleared.
 
 ---
@@ -59,4 +59,4 @@ The application is built with Next.js 15 (App Router), React 19, Tailwind CSS v4
     *   *AI Insight Trigger:* **Button-triggered "Analyze this Source"**. Auto-summarizing everything will quickly drain Gemini API quotas and increase page load times unnecessarily.
 
 ## Conclusion
-The architectural foundation of Nexus Study Pilot is solid. The migration to Next.js App Router and Server Actions was executed well, mitigating immediate security risks. The focus should now strictly adhere to completing the Phase 2 (Hardening) tasks before introducing the complexity of a persistent backend (Phase 3).
+The architectural foundation of Vortexa Study Pilot is solid. The migration to Next.js App Router and Server Actions was executed well, mitigating immediate security risks. The focus should now strictly adhere to completing the Phase 2 (Hardening) tasks before introducing the complexity of a persistent backend (Phase 3).

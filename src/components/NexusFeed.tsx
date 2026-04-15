@@ -1,207 +1,191 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useRef } from 'react';
-import { Plus, FileText, Send, X, Paperclip } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Share2, Image as ImageIcon, Link as LinkIcon, MoreHorizontal, FileText, Loader2, Paperclip, X } from 'lucide-react';
 import PostCard from './PostCard';
+import { createClient } from '@/lib/supabase/client';
 
-interface PostMedia {
-  type: 'document' | 'video';
-  url: string;
-  title: string;
-  thumbnail?: string;
-}
-
-interface Post {
-  id: string;
-  author: {
-    name: string;
-    role: string;
-    avatar: string;
-  };
-  content: string;
-  timestamp: string;
-  media?: PostMedia;
-  stats: {
-    likes: number;
-    comments: number;
-  };
-}
-
-const NexusFeed: React.FC = () => {
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      id: '1',
-      author: { name: 'Dr. Rafiqul Islam', role: 'Faculty Advisor', avatar: '' },
-      content: "Welcome to the BOU Nexus! This is your space to share study materials and help each other. I've uploaded the new TMA guidelines for this semester.",
-      timestamp: '2h ago',
-      media: {
-        type: 'document' as const,
-        url: '#',
-        title: 'TMA_Guidelines_Spring_2026.pdf'
-      },
-      stats: { likes: 24, comments: 8 }
-    },
-    {
-      id: '2',
-      author: {
-        name: 'Saiful Islam',
-        role: 'Senior Student',
-        avatar: ''
-      },
-      content: "Found this incredible tutorial on Pointers in C. The visual explanations really helped me get through the SPL lab report!",
-      timestamp: '5h ago',
-      media: {
-        type: 'video' as const,
-        url: 'https://www.youtube.com/watch?v=KJgs26ucDzg',
-        title: 'C Pointers - Visual Guide',
-        thumbnail: 'https://img.youtube.com/vi/KJgs26ucDzg/maxresdefault.jpg'
-      },
-      stats: { likes: 56, comments: 12 }
-    }
-  ]);
-
-  const [newPost, setNewPost] = useState('');
-  const [attachedFile, setAttachedFile] = useState<{name: string, type: string} | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+export default function NexusFeed() {
+  const [posts, setPosts] = useState<any[]>([]);
+  const [content, setContent] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePost = () => {
-    if (!newPost.trim() && !attachedFile) return;
+  const supabase = createClient();
 
-    const postToAdd = {
-      id: Date.now().toString(),
-      author: { name: 'My Profile', role: 'Student', avatar: '' },
-      content: newPost,
-      timestamp: 'Just now',
-      media: attachedFile ? {
-        type: 'document' as const,
-        url: '#',
-        title: attachedFile.name
-      } : undefined,
-      stats: { likes: 0, comments: 0 }
+  useEffect(() => {
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+
+      // Fetch initial posts
+      const { data } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          profiles ( name, avatar_url, semester )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (data) setPosts(data);
     };
 
-    setPosts([postToAdd, ...posts]);
-    setNewPost('');
-    setAttachedFile(null);
-  };
+    init();
 
-  const handleFileClick = () => {
-    fileInputRef.current?.click();
-  };
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('public:posts')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, async (payload) => {
+         // Fetch the profile for the new post
+         const { data: profileData } = await supabase.from('profiles').select('*').eq('id', payload.new.user_id).single();
+         const newPost = { ...payload.new, profiles: profileData };
+         setPosts((current) => [newPost, ...current]);
+      })
+      .subscribe();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setIsUploading(true);
-      setTimeout(() => {
-        setAttachedFile({ name: file.name, type: file.type });
-        setIsUploading(false);
-      }, 1000);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
+
+  const handlePost = async () => {
+    if (!content.trim() || !user) return;
+    setIsSubmitting(true);
+
+    try {
+      let file_url = null;
+      let file_name = null;
+
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('resources')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage.from('resources').getPublicUrl(filePath);
+        file_url = publicUrl;
+        file_name = file.name;
+      }
+
+      const { error } = await supabase.from('posts').insert([
+        {
+          user_id: user.id,
+          content,
+          link_url: linkUrl || null,
+          file_url,
+          file_name
+        }
+      ]);
+
+      if (error) throw error;
+
+      setContent('');
+      setLinkUrl('');
+      setShowLinkInput(false);
+      setFile(null);
+    } catch (error) {
+      console.error("Failed to create post", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="w-full pb-20">
-      {/* Semester Quick Recap */}
-      <div className="mb-8 animate-apple-in">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-[32px] font-extrabold text-[var(--text-primary)] tracking-tight">Community Feed</h2>
-            <p className="text-[14px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mt-2">Semester 1 • Spring 2026</p>
-          </div>
-          <div className="flex items-center gap-2 px-5 py-2.5 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-subtle)] shadow-sm">
-            <span className="w-2.5 h-2.5 rounded-full bg-[var(--success)] shadow-[var(--success-glow)] animate-pulse" />
-            <span className="text-[12px] font-bold text-[var(--text-primary)] uppercase tracking-widest">342 online</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="apple-card p-6 bg-[var(--text-primary)] text-[var(--bg-primary)] border-none shadow-[var(--card-shadow-elevated)] group hover:scale-[1.02] transition-all duration-500">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--bg-primary)]/40 mb-2">Academic Vibe</p>
-            <p className="text-3xl font-black tracking-tight leading-none">Target 4.0</p>
-            <div className="mt-6 h-1.5 bg-[var(--bg-primary)]/10 rounded-full overflow-hidden">
-              <div className="h-full bg-[var(--bg-primary)] shadow-[var(--success-glow)]" style={{ width: '85%' }} />
+    <div className="w-full space-y-6 animate-apple-in">
+      {user ? (
+        <div className="bg-[var(--bg-secondary)] rounded-3xl border border-[var(--border-subtle)] p-5 shadow-sm">
+          <div className="flex gap-4">
+            <div className="w-10 h-10 rounded-full bg-[var(--text-primary)] text-[var(--bg-primary)] flex-shrink-0 flex items-center justify-center font-bold">
+              {user.user_metadata?.avatar_url ? (
+                <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full rounded-full" />
+              ) : (
+                user.email?.charAt(0).toUpperCase()
+              )}
             </div>
-            <p className="text-[10px] font-bold text-[var(--success)] uppercase tracking-widest mt-5">Steady Progress</p>
-          </div>
-          <div className="apple-card p-6 bg-[var(--bg-secondary)] border-[var(--border-subtle)] shadow-[var(--card-shadow)] text-[var(--text-primary)]">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-2">Exams Remaining</p>
-            <p className="text-3xl font-black tracking-tight text-[var(--text-primary)]">04</p>
-            <p className="text-[12px] font-bold text-[var(--danger)] uppercase tracking-tight mt-4">Next: Physics I (20 Apr)</p>
-          </div>
-          <div className="apple-card p-6 bg-[var(--bg-secondary)] border-[var(--border-subtle)] shadow-[var(--card-shadow)] text-[var(--text-primary)]">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-2">Credits Done</p>
-            <p className="text-3xl font-black tracking-tight text-[var(--text-primary)]">14.0</p>
-            <p className="text-[12px] font-bold text-[var(--success)] uppercase tracking-tight mt-4">126.0 Credits to go</p>
-          </div>
-        </div>
-      </div>
+            <div className="flex-1 space-y-3">
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Share a resource, ask a question, or discuss an exam..."
+                className="w-full bg-transparent border-none focus:ring-0 text-[13px] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] resize-none min-h-[60px]"
+              />
 
-      {/* Post Creator */}
-      <div className="apple-card p-5 mb-8 bg-[var(--bg-secondary)] border-[var(--border-subtle)] hover:shadow-2xl transition-all duration-500 animate-apple-in" style={{ animationDelay: '100ms' }}>
-        <div className="flex gap-6">
-          <div className="w-12 h-12 rounded-2xl bg-[var(--text-primary)] flex items-center justify-center shrink-0">
-            <Plus className="w-6 h-6 text-[var(--bg-primary)]" />
-          </div>
-          <div className="flex-1">
-            <textarea
-              placeholder="Share an academic resource or start a discussion..."
-              value={newPost}
-              onChange={(e) => setNewPost(e.target.value)}
-              className="w-full bg-transparent border-none focus:ring-0 text-[18px] placeholder:text-[var(--text-tertiary)] resize-none min-h-[60px] py-2 font-medium text-[var(--text-primary)]"
-            />
-            
-            {attachedFile && (
-              <div className="flex items-center justify-between p-5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] mt-5 animate-apple-in">
-                <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-[var(--text-primary)] flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-[var(--bg-primary)]" />
-                  </div>
-                  <span className="text-[14px] font-bold text-[var(--text-primary)]">{attachedFile.name}</span>
+              {showLinkInput && (
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-subtle)]">
+                   <LinkIcon className="w-4 h-4 text-[var(--text-tertiary)]" />
+                   <input
+                     type="url"
+                     value={linkUrl}
+                     onChange={(e) => setLinkUrl(e.target.value)}
+                     placeholder="Paste a link..."
+                     className="flex-1 bg-transparent border-none text-[12px] text-[var(--text-primary)] focus:outline-none"
+                   />
+                   <button onClick={() => setShowLinkInput(false)}><X className="w-4 h-4 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]" /></button>
                 </div>
-                <button onClick={() => setAttachedFile(null)} className="p-2.5 hover:bg-[var(--text-primary)]/5 rounded-full transition-colors text-[var(--text-tertiary)]">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            )}
+              )}
 
-            <div className="flex items-center justify-between mt-6 pt-6 border-t border-[var(--border-subtle)]">
-              <div className="flex items-center gap-3">
-                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-                <button 
-                  onClick={handleFileClick}
-                  className="px-5 py-3 rounded-2xl text-[12px] font-bold text-[var(--text-secondary)] uppercase tracking-widest hover:bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] transition-all flex items-center gap-2.5"
+              {file && (
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] w-fit">
+                   {file.type.startsWith('image/') ? <ImageIcon className="w-4 h-4 text-[var(--text-tertiary)]" /> : <FileText className="w-4 h-4 text-[var(--text-tertiary)]" />}
+                   <span className="text-[11px] font-bold text-[var(--text-primary)] max-w-[200px] truncate">{file.name}</span>
+                   <button onClick={() => setFile(null)}><X className="w-3 h-3 text-[var(--text-tertiary)] hover:text-[var(--danger)]" /></button>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between pt-3 border-t border-[var(--border-subtle)]">
+                <div className="flex items-center gap-1">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={(e) => e.target.files && setFile(e.target.files[0])}
+                    accept="image/*,.pdf,.doc,.docx"
+                  />
+                  <button onClick={() => fileInputRef.current?.click()} className="p-2 rounded-xl text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                    <Paperclip className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => setShowLinkInput(!showLinkInput)} className="p-2 rounded-xl text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                    <LinkIcon className="w-4 h-4" />
+                  </button>
+                </div>
+                <button
+                  onClick={handlePost}
+                  disabled={!content.trim() || isSubmitting}
+                  className="px-5 py-2 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[12px] font-bold hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
                 >
-                  <Paperclip className="w-4.5 h-4.5" />
-                  <span>Attach Document</span>
+                  {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Post'}
                 </button>
               </div>
-              <button 
-                onClick={handlePost}
-                disabled={!newPost.trim() && !attachedFile}
-                className={`px-10 py-3.5 rounded-2xl font-bold text-[12px] uppercase tracking-widest transition-all ${
-                  (!newPost.trim() && !attachedFile) 
-                    ? 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed border border-[var(--border-subtle)]' 
-                    : 'bg-[var(--text-primary)] text-[var(--bg-primary)] hover:opacity-90 shadow-[var(--card-shadow-elevated)]'
-                }`}
-              >
-                Share to Feed
-              </button>
             </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-[var(--bg-secondary)] rounded-3xl border border-[var(--border-subtle)] p-6 text-center">
+           <h3 className="text-[13px] font-bold text-[var(--text-primary)] mb-2">Join the Discussion</h3>
+           <p className="text-[11px] text-[var(--text-secondary)]">Sign in to post questions, share resources, and connect with other BOU students.</p>
+        </div>
+      )}
 
       {/* Feed Stream */}
-      <div className="space-y-6">
-        {posts.map(post => (
-          <PostCard key={post.id} post={post} />
-        ))}
+      <div className="space-y-4">
+        {posts.length === 0 ? (
+           <div className="p-8 text-center text-[var(--text-tertiary)] text-[12px] font-bold uppercase tracking-widest border border-dashed border-[var(--border-subtle)] rounded-3xl">No posts yet. Be the first!</div>
+        ) : (
+          posts.map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))
+        )}
       </div>
     </div>
   );
-};
-
-
-export default NexusFeed;
+}

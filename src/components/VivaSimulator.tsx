@@ -44,11 +44,12 @@ const VivaSimulator: React.FC = () => {
   const startSession = async () => {
     if (!selectedCourse) return;
     setIsLoading(true);
+    const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
     try {
       const course = semester.courses.find(c => c.id === selectedCourse);
       if (!course) return;
       const details = COURSE_DETAILS[course.id];
-      const firstQuestion = await vivaStartAction(course.name, course.id, details?.topics || []);
+      const firstQuestion = await vivaStartAction(course.name, course.id, details?.topics || [], userApiKey);
       setSession(true);
       setMessages([{ role: 'model', text: firstQuestion }]);
     } catch (e: any) {
@@ -65,9 +66,11 @@ const VivaSimulator: React.FC = () => {
     setInput('');
     setIsLoading(true);
 
+    const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
+
     try {
       const history = messages.map(m => ({ role: m.role, text: m.text }));
-      const responseText = await vivaChatAction(userText, history);
+      const responseText = await vivaChatAction(userText, history, userApiKey);
       setMessages(prev => [...prev, { role: 'model', text: responseText }]);
     } catch (e: any) {
       setMessages(prev => [...prev, { role: 'model', text: `⚠️ Error: ${e.message}` }]);
@@ -79,8 +82,9 @@ const VivaSimulator: React.FC = () => {
   const speak = async (text: string) => {
     if (isPlaying) return;
     setIsPlaying(true);
+    const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
     try {
-      const audioData = await generateSpeechAction(text);
+      const audioData = await generateSpeechAction(text, userApiKey);
       if (audioData) {
         const byteCharacters = atob(audioData);
         const byteArray = new Uint8Array(byteCharacters.length);

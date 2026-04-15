@@ -27,12 +27,12 @@ interface Post {
   };
 }
 
-const NexusFeed: React.FC = () => {
+const VortexaFeed: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([
     {
       id: '1',
       author: { name: 'Dr. Rafiqul Islam', role: 'Faculty Advisor', avatar: '' },
-      content: "Welcome to the BOU Nexus! This is your space to share study materials and help each other. I've uploaded the new TMA guidelines for this semester.",
+      content: "Welcome to the BOU Vortexa! This is your space to share study materials and help each other. I've uploaded the new TMA guidelines for this semester.",
       timestamp: '2h ago',
       media: {
         type: 'document' as const,
@@ -204,4 +204,4 @@ const NexusFeed: React.FC = () => {
 };
 
 
-export default NexusFeed;
+export default VortexaFeed;

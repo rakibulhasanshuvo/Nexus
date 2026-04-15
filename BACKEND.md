@@ -25,7 +25,7 @@ This document outlines the complete backend architecture and the phased migratio
 - [x] **Added `--danger-subtle` CSS token**: Light + dark mode for delete buttons and F-grade badges
 - [x] **Fixed invalid Tailwind**: `col-span-8.5` → `col-span-8` in Dashboard
 - [x] **SEO metadata**: Added `title` + `description` to all 6 routes
-- [x] **Removed dead imports**: NexusFeed (3 icons), FlashcardForge, CourseWorkspace
+- [x] **Removed dead imports**: VortexaFeed (3 icons), FlashcardForge, CourseWorkspace
 - [x] **Removed dead CSS**: Unused `shimmer` keyframe
 - [x] **Deleted stale files**: `__old_backup/`, `migrated_prompt_history/`, `CLAUDE.md`
 

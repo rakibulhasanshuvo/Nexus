@@ -15,12 +15,24 @@ Rules:
 7. Resource Finder Logic: Use STRICT_FREE_ONLY filter. Prioritize high-retention English YouTube channels (Neso Academy, Gate Smashers, FreeCodeCamp) and MIT OCW/LibreTexts for Physics.
 `;
 
-function getClient() {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not defined in environment variables.");
+function getClient(userApiKey?: string) {
+  if (userApiKey) {
+    return new GoogleGenAI({ apiKey: userApiKey });
   }
-  return new GoogleGenAI({ apiKey });
+
+  const key1 = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const key2 = process.env.GEMINI_API_KEY_2;
+  const key3 = process.env.GEMINI_API_KEY_3;
+
+  const availableKeys = [key1, key2, key3].filter(Boolean) as string[];
+
+  if (availableKeys.length === 0) {
+    throw new Error("No GEMINI_API_KEY is defined in environment variables.");
+  }
+
+  // Pick a random key from the available keys
+  const randomKey = availableKeys[Math.floor(Math.random() * availableKeys.length)];
+  return new GoogleGenAI({ apiKey: randomKey });
 }
 
 // ==========================================
@@ -36,9 +48,10 @@ export async function counselorChatAction(
   message: string,
   mode: 'general' | 'exam' | 'planning' | 'tma',
   context: string,
-  history: ChatHistoryItem[]
+  history: ChatHistoryItem[],
+  userApiKey?: string
 ): Promise<{ text: string; groundingUrls: string[] }> {
-  const ai = getClient();
+  const ai = getClient(userApiKey);
 
   let modeInstruction = SYSTEM_INSTRUCTION;
   switch (mode) {
@@ -93,9 +106,10 @@ export async function counselorChatAction(
 export async function vivaStartAction(
   courseName: string,
   courseId: string,
-  topics: string[]
+  topics: string[],
+  userApiKey?: string
 ): Promise<string> {
-  const ai = getClient();
+  const ai = getClient(userApiKey);
   const chat = ai.chats.create({
     model: 'gemini-1.5-flash',
     config: {
@@ -110,9 +124,10 @@ export async function vivaStartAction(
 
 export async function vivaChatAction(
   message: string,
-  history: ChatHistoryItem[]
+  history: ChatHistoryItem[],
+  userApiKey?: string
 ): Promise<string> {
-  const ai = getClient();
+  const ai = getClient(userApiKey);
   const chat = ai.chats.create({
     model: 'gemini-1.5-flash',
     config: {
@@ -128,8 +143,8 @@ export async function vivaChatAction(
   return response.text || '';
 }
 
-export async function generateSpeechAction(text: string): Promise<string | undefined> {
-  const ai = getClient();
+export async function generateSpeechAction(text: string, userApiKey?: string): Promise<string | undefined> {
+  const ai = getClient(userApiKey);
   const response = await ai.models.generateContent({
     model: "gemini-1.5-flash",
     contents: [{ parts: [{ text: `Ask this viva question clearly: ${text}` }] }],
@@ -145,8 +160,8 @@ export async function generateSpeechAction(text: string): Promise<string | undef
 // SYLLABUS EXPLORER (SyllabusExplorer.tsx)
 // ==========================================
 
-export async function explainTopicAction(courseName: string, topic: string): Promise<string> {
-  const ai = getClient();
+export async function explainTopicAction(courseName: string, topic: string, userApiKey?: string): Promise<string> {
+  const ai = getClient(userApiKey);
   const response = await ai.models.generateContent({
     model: 'gemini-1.5-flash',
     contents: `Explain the concept "${topic}" from the course "${courseName}" in 3 simple sentences. Focus on the 'Why' and 'How'.`,
@@ -154,13 +169,13 @@ export async function explainTopicAction(courseName: string, topic: string): Pro
   return response.text || 'Explanation unavailable.';
 }
 
-export async function generateQuizAction(courseName: string, topic: string): Promise<{
+export async function generateQuizAction(courseName: string, topic: string, userApiKey?: string): Promise<{
   question: string;
   options: string[];
   correctAnswer: number;
   explanation: string;
 } | null> {
-  const ai = getClient();
+  const ai = getClient(userApiKey);
   const response = await ai.models.generateContent({
     model: 'gemini-1.5-flash',
     contents: `Create a single multiple-choice question for "${topic}" (${courseName}). Return JSON: { "question": string, "options": string[], "correctAnswer": number (0-3), "explanation": string }`,
@@ -179,9 +194,10 @@ export async function generateQuizAction(courseName: string, topic: string): Pro
 
 export async function extractRoutineAction(
   base64Image: string,
-  mimeType: string
+  mimeType: string,
+  userApiKey?: string
 ): Promise<ExamRoutineItem[]> {
-  const ai = getClient();
+  const ai = getClient(userApiKey);
   const schema: Schema = {
     type: Type.ARRAY,
     items: {
@@ -220,8 +236,8 @@ export async function extractRoutineAction(
 // RESOURCE FINDER (already existed — kept)
 // ==========================================
 
-export async function generateCheatSheetAction(courseName: string, unitTitle: string, topics: string[]): Promise<string> {
-  const ai = getClient();
+export async function generateCheatSheetAction(courseName: string, unitTitle: string, topics: string[], userApiKey?: string): Promise<string> {
+  const ai = getClient(userApiKey);
   const prompt = `Act as an expert instructor for the Bangladesh Open University (BOU).
 COURSE: "${courseName}"
 UNIT: "${unitTitle}"
@@ -247,8 +263,8 @@ CONSTRAINTS:
   }
 }
 
-export async function generateTMAOutlineAction(courseName: string, unitTitle: string, userPrompt: string): Promise<string> {
-  const ai = getClient();
+export async function generateTMAOutlineAction(courseName: string, unitTitle: string, userPrompt: string, userApiKey?: string): Promise<string> {
+  const ai = getClient(userApiKey);
   const prompt = `Act as a strict academic tutor for Bangladesh Open University (BOU).
 COURSE: "${courseName}"
 CONTEXT UNIT: "${unitTitle}"
@@ -278,9 +294,10 @@ export async function findStructuredTutorialsAction(
   courseName: string, 
   unitTitle: string, 
   topics: string[], 
-  preference: string
+  preference: string,
+  userApiKey?: string
 ): Promise<StructuredTutorial[]> {
-  const ai = getClient();
+  const ai = getClient(userApiKey);
   const prompt = `Act as an expert academic advisor for University students.
 COURSE: "${courseName}"
 UNIT: "${unitTitle}"
@@ -332,9 +349,10 @@ Respond ONLY with the requested JSON structure. Do NOT hallucinate URLs, provide
 export async function generateFlashcardsAction(
   courseName: string,
   courseId: string,
-  topics: string[]
+  topics: string[],
+  userApiKey?: string
 ): Promise<{ question: string; answer: string }[]> {
-  const ai = getClient();
+  const ai = getClient(userApiKey);
   const prompt = `Generate 5 high-yield study flashcards for the course "${courseName}" (${courseId}). 
       Topics to focus on: ${topics.join(', ')}. 
       Format: JSON array of objects with { "question": string, "answer": string }. 
@@ -362,9 +380,10 @@ export async function courseTutorChatAction(
   courseName: string,
   courseId: string,
   courseOverview: string,
-  history: { role: 'user' | 'model'; text: string }[]
+  history: { role: 'user' | 'model'; text: string }[],
+  userApiKey?: string
 ): Promise<string> {
-  const ai = getClient();
+  const ai = getClient(userApiKey);
   const chat = ai.chats.create({
     model: 'gemini-1.5-flash',
     config: {

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { Plus, FileText, Send, X, Paperclip, Image as ImageIcon, Loader2 } from 'lucide-react';
 import PostCard from './PostCard';
+import CreatePost from './CreatePost';
 
 interface PostMedia {
   type: 'document' | 'video' | 'image';
@@ -66,23 +67,26 @@ const VortexaFeed: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePost = () => {
-    if (!newPost.trim() && !attachedFile) return;
-
+  const handlePostCreated = useCallback((content: string, file: { name: string; type: string; url: string } | null) => {
     const postToAdd = {
       id: Date.now().toString(),
       author: { name: 'My Profile', role: 'Student', avatar: '' },
-      content: newPost,
+      content: content,
       timestamp: 'Just now',
-      media: attachedFile ? {
-        type: attachedFile.type.startsWith('image/') ? 'image' as const : 'document' as const,
-        url: attachedFile.url,
-        title: attachedFile.name
+      media: file ? {
+        type: file.type.startsWith('image/') ? 'image' as const : 'document' as const,
+        url: file.url,
+        title: file.name
       } : undefined,
       stats: { likes: 0, comments: 0 }
     };
 
-    setPosts([postToAdd, ...posts]);
+    setPosts(currentPosts => [postToAdd, ...currentPosts]);
+  }, []);
+
+  const handlePost = () => {
+    if (!newPost.trim() && !attachedFile) return;
+    handlePostCreated(newPost, attachedFile);
     setNewPost('');
     setAttachedFile(null);
   };
@@ -228,13 +232,14 @@ const VortexaFeed: React.FC = () => {
 
       {/* Feed Stream */}
       <div className="space-y-6">
-        {posts.map(post => (
-          <PostCard key={post.id} post={post} />
+        {posts.map((post, index) => (
+          <div key={post.id} className="animate-apple-in" style={{ animationDelay: `${(index + 1) * 100}ms` }}>
+             <PostCard post={post} />
+          </div>
         ))}
       </div>
     </div>
   );
 };
-
 
 export default VortexaFeed;

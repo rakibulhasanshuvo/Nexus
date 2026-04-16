@@ -83,7 +83,7 @@ const VortexaFeed: React.FC = () => {
       <div className="mb-8 animate-apple-in">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-[32px] font-extrabold text-[var(--text-primary)] tracking-tight">Community Feed</h2>
+            <h1 className="text-[32px] font-extrabold text-[var(--text-primary)] tracking-tight">Community Feed</h1>
             <p className="text-[14px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mt-2">Semester 1 • Spring 2026</p>
           </div>
           <div className="flex items-center gap-2 px-5 py-2.5 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-subtle)] shadow-sm">

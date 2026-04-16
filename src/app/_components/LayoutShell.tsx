@@ -36,6 +36,17 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
     item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
   )?.id || 'dashboard';
 
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+
   return (
     <div className="min-h-screen flex bg-[var(--bg-primary)] transition-colors duration-300">
       {/* Desktop Sidebar */}

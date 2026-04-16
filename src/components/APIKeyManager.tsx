@@ -11,9 +11,12 @@ export const APIKeyManager: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
 
   useEffect(() => {
-    const storedKey = localStorage.getItem('bou_user_api_key');
-    if (storedKey) {
-      setApiKey(storedKey);
+    // Only access localStorage on client-side
+    if (typeof window !== 'undefined') {
+      const storedKey = localStorage.getItem('bou_user_api_key');
+      if (storedKey) {
+        queueMicrotask(() => setApiKey(storedKey));
+      }
     }
   }, []);
 

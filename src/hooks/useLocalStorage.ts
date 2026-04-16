@@ -18,7 +18,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     try {
       const item = window.localStorage.getItem(key);
       if (item) {
-        setStoredValue(JSON.parse(item));
+        queueMicrotask(() => setStoredValue(JSON.parse(item)));
       }
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error);
@@ -53,7 +53,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       const item = window.localStorage.getItem(key);
       if (item) {
         try {
-          setStoredValue(JSON.parse(item));
+          queueMicrotask(() => setStoredValue(JSON.parse(item)));
         } catch (e) {
           console.error(e);
         }

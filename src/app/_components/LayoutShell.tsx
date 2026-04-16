@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { APIKeyManager } from '../../components/APIKeyManager';
+import { useAuth } from '@/contexts/AuthContext';
+import { LogOut, User as UserIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface LayoutShellProps {
   children: React.ReactNode;
@@ -16,8 +19,10 @@ interface LayoutShellProps {
 
 const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const { user, isLoading, signOut } = useAuth();
 
   const navItems = [
     { id: 'dashboard', label: 'Home', icon: Home, href: '/' },
@@ -35,6 +40,27 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
   const activeTab = [...navItems, ...toolsItems].find(item => 
     item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
   )?.id || 'dashboard';
+
+  // Redirect to login if not authenticated and not loading
+  useEffect(() => {
+    if (!isLoading && !user && pathname !== '/login') {
+      router.push('/login');
+    }
+  }, [user, isLoading, pathname, router]);
+
+  // If we're on the login page, render full screen without shell
+  if (pathname === '/login') {
+    return <>{children}</>;
+  }
+
+  // Show a blank or loading state while checking auth to prevent flash of content
+  if (isLoading || (!user && pathname !== '/login')) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
+        <div className="w-8 h-8 rounded-full border-2 border-[var(--text-primary)] border-t-transparent animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-[var(--bg-primary)] transition-colors duration-300">
@@ -109,11 +135,33 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
           </div>
         </div>
 
-        {/* AI Status Stick */}
-        <div className="p-6 pt-2">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-[var(--bg-secondary)]/50 border border-[var(--border-subtle)] shadow-sm">
-            <div className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse" />
-            <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Counselor Online</span>
+        {/* User Profile Footer */}
+        <div className="p-4 pt-2 pb-6">
+          <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-[var(--bg-secondary)]/50 border border-[var(--border-subtle)] shadow-sm group">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-8 h-8 rounded-full bg-[var(--text-primary)] flex items-center justify-center shrink-0">
+                {user?.user_metadata?.avatar_url ? (
+                   <img src={user.user_metadata.avatar_url} alt="User Avatar" className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                   <UserIcon className="w-4 h-4 text-[var(--bg-primary)]" />
+                )}
+              </div>
+              <div className="flex flex-col overflow-hidden">
+                <span className="text-[12px] font-bold text-[var(--text-primary)] truncate">
+                  {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Student'}
+                </span>
+                <span className="text-[9px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest truncate">
+                  Logged In
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={signOut}
+              className="text-[var(--text-tertiary)] hover:text-[var(--danger)] transition-colors opacity-0 group-hover:opacity-100"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </nav>

@@ -165,6 +165,7 @@ const CourseWorkspace: React.FC<CourseWorkspaceProps> = ({ courseId }) => {
                       className="w-full h-16 pl-8 pr-16 rounded-2xl bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] focus:border-[var(--text-primary)] focus:bg-[var(--bg-secondary)] transition-all outline-none font-bold text-[16px] text-[var(--text-primary)]"
                     />
                     <button 
+                      aria-label="Send message"
                       onClick={handleSendMessage}
                       disabled={!input.trim() || isLoading}
                       className="absolute right-3 top-3 w-10 h-10 rounded-xl bg-[var(--text-primary)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-20"
@@ -194,7 +195,7 @@ const CourseWorkspace: React.FC<CourseWorkspaceProps> = ({ courseId }) => {
               <div className="p-2.5 rounded-xl bg-[var(--bg-tertiary)] text-[var(--text-primary)]">
                 <BookOpen className="w-5 h-5" />
               </div>
-              <h3 className="text-[12px] font-bold uppercase tracking-widest text-[var(--text-primary)]">Curriculum Roadmap</h3>
+              <h2 className="text-[12px] font-bold uppercase tracking-widest text-[var(--text-primary)]">Curriculum Roadmap</h2>
             </div>
             <div className="space-y-3">
               {details?.syllabus_roadmap?.map((item, idx) => {
@@ -225,7 +226,7 @@ const CourseWorkspace: React.FC<CourseWorkspaceProps> = ({ courseId }) => {
               <div className="p-2.5 rounded-xl bg-[var(--bg-tertiary)] text-[var(--text-primary)] shadow-inner">
                 <Play className="w-5 h-5" />
               </div>
-              <h3 className="text-[12px] font-bold uppercase tracking-widest text-[var(--text-secondary)] font-bold">Verified Resources</h3>
+              <h2 className="text-[12px] font-bold uppercase tracking-widest text-[var(--text-secondary)] font-bold">Verified Resources</h2>
             </div>
             <div className="space-y-4">
               {resources.map(res => (

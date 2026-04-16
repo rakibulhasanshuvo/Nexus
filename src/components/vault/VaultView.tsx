@@ -112,7 +112,7 @@ export const VaultView: React.FC<VaultViewProps> = ({
         {/* History List */}
         <div className="apple-card bg-[var(--bg-secondary)] border border-[var(--border-subtle)] overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-[var(--border-subtle)] flex items-center justify-between bg-[var(--bg-tertiary)]/30">
-            <h3 className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-widest">Academic History Log</h3>
+            <h2 className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-widest">Academic History Log</h2>
             <div className="flex items-center gap-4">
                <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">{results.length} Semesters</span>
                <div className="w-px h-3 bg-[var(--border-subtle)]" />
@@ -160,7 +160,7 @@ export const VaultView: React.FC<VaultViewProps> = ({
         <div className="apple-card p-6 bg-[var(--bg-secondary)] border border-[var(--border-subtle)] shadow-sm">
           <div className="flex items-center gap-2 mb-6 border-b border-[var(--border-subtle)] pb-3">
              <Plus className="w-4 h-4 text-[var(--text-secondary)]" />
-             <h3 className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-widest">Log Result</h3>
+             <h2 className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-widest">Log Result</h2>
           </div>
           
           <div className="space-y-5">

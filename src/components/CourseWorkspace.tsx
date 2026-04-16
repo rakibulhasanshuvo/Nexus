@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { COURSE_MAPPING, COURSE_DETAILS, STATIC_RESOURCES } from '@/lib/constants';
 import { courseTutorChatAction } from '@/app/actions/ai';
+import { useSyncedData } from '@/hooks/useSyncedData';
 import { 
   Bot, User, Send, Loader2, BookOpen, 
   FileText, ExternalLink, ChevronLeft, Sparkles, MessageCircle,
@@ -19,7 +20,14 @@ const CourseWorkspace: React.FC<CourseWorkspaceProps> = ({ courseId }) => {
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; text: string }[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [syllabusProgress, setSyllabusProgress] = useState<Record<number, boolean>>({});
+  const [syllabusProgress, setSyllabusProgress] = useSyncedData<Record<number, boolean>>(
+    `bou_progress_${courseId}`,
+    {},
+    'course_progress',
+    'course_id',
+    courseId,
+    'progress_data'
+  );
   const [activeTab, setActiveTab] = useState<'tutor' | 'flashcards'>('tutor');
 
   const course = COURSE_MAPPING.flatMap(s => s.courses).find(c => c.id === courseId);
@@ -27,22 +35,18 @@ const CourseWorkspace: React.FC<CourseWorkspaceProps> = ({ courseId }) => {
   const resources = STATIC_RESOURCES.filter(r => r.courseId === courseId);
 
   useEffect(() => {
-    const saved = localStorage.getItem(`bou_progress_${courseId}`);
-    if (saved) setSyllabusProgress(JSON.parse(saved));
-    
     // Initial AI greeting
-    if (course) {
+    if (course && messages.length === 0) {
       setMessages([{ 
         role: 'model', 
         text: `Welcome to the ${course.name} Study Circle. I am your AI Tutor. How can I help you master this course today?` 
       }]);
     }
-  }, [courseId, course]);
+  }, [courseId, course, messages.length]);
 
   const toggleTopic = (weekIdx: number) => {
     const next = { ...syllabusProgress, [weekIdx]: !syllabusProgress[weekIdx] };
     setSyllabusProgress(next);
-    localStorage.setItem(`bou_progress_${courseId}`, JSON.stringify(next));
   };
 
   const handleSendMessage = async () => {

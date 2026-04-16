@@ -98,7 +98,7 @@ const FlashcardForge: React.FC<FlashcardForgeProps> = ({ courseId, courseName, t
           <Brain className="absolute inset-0 m-auto w-8 h-8 text-[var(--text-primary)] animate-pulse" />
         </div>
         <div className="text-center">
-          <h3 className="text-xl font-bold text-[var(--text-primary)]">Forging Your Flashcards</h3>
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">Forging Your Flashcards</h2>
           <p className="text-sm text-[var(--text-tertiary)] mt-2 font-medium">Gemini 1.5 Flash is analyzing your syllabus...</p>
         </div>
       </div>
@@ -111,7 +111,7 @@ const FlashcardForge: React.FC<FlashcardForgeProps> = ({ courseId, courseName, t
         <div className="w-20 h-20 rounded-[30px] bg-[var(--text-primary)] flex items-center justify-center mb-8 shadow-[var(--card-shadow-elevated)]">
           <Sparkles className="w-10 h-10 text-[var(--bg-primary)]" />
         </div>
-        <h3 className="text-2xl font-black tracking-tight text-[var(--text-primary)] mb-4">No Study Cards Yet</h3>
+        <h2 className="text-2xl font-black tracking-tight text-[var(--text-primary)] mb-4">No Study Cards Yet</h2>
         <p className="text-sm text-[var(--text-tertiary)] max-w-sm mx-auto mb-10 font-medium leading-relaxed">
           Transform your course syllabus into interactive 3D flashcards using AI for high-intensity active recall.
         </p>
@@ -198,6 +198,7 @@ const FlashcardForge: React.FC<FlashcardForgeProps> = ({ courseId, courseName, t
       {/* Controls */}
       <div className="flex items-center justify-center gap-6 pt-4">
         <button 
+          aria-label="Previous card"
           onClick={prevCard}
           disabled={currentIndex === 0}
           className="w-16 h-16 rounded-[24px] bg-[var(--bg-secondary)] border border-[var(--border-subtle)] flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 disabled:opacity-20 transition-all text-[var(--text-primary)]"

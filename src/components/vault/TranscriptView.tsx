@@ -36,8 +36,8 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
               <GraduationCap className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-tertiary)] mb-1">Academic Division · BOU</h2>
-              <h3 className="text-xl font-black tracking-tight text-[var(--text-primary)] uppercase">Official Student Progress Transcript</h3>
+              <h1 className="text-xl font-black tracking-tight text-[var(--text-primary)] uppercase">Official Student Progress Transcript</h1>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-tertiary)] mt-1">Academic Division · BOU</h2>
             </div>
           </div>
           
@@ -75,7 +75,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
             {results.map(sem => (
               <div key={sem.semester} className="space-y-5">
                 <div className="flex items-center justify-between border-b-2 pb-3 border-[var(--text-primary)]">
-                  <h3 className="text-xs font-black uppercase tracking-[0.1em] text-[var(--text-primary)]">Term Record: S0{sem.semester}</h3>
+                  <h2 className="text-xs font-black uppercase tracking-[0.1em] text-[var(--text-primary)]">Term Record: S0{sem.semester}</h2>
                   <p className="text-[11px] font-bold text-[var(--text-secondary)]">GPA: <span className="text-[var(--text-primary)] font-black">{sem.gpa.toFixed(2)}</span></p>
                 </div>
                 <div className="space-y-3">
@@ -97,7 +97,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
             <div className="w-20 h-20 rounded-3xl bg-[var(--bg-tertiary)] border-2 border-dashed border-[var(--border-subtle)] flex items-center justify-center mb-8">
                <FileText className="w-8 h-8 text-[var(--text-tertiary)]" />
             </div>
-            <h4 className="text-[14px] font-black text-[var(--text-primary)] uppercase tracking-[0.3em] mb-3">Transcripts Awaiting Integration</h4>
+            <h2 className="text-[14px] font-black text-[var(--text-primary)] uppercase tracking-[0.3em] mb-3">Transcripts Awaiting Integration</h2>
             <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest max-w-sm leading-relaxed">
               Log your semester results in the <span className="text-[var(--text-primary)] underline">Vault</span> to generate a certified academic progress report.
             </p>

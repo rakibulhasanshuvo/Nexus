@@ -39,7 +39,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             {post.author.name[0]}
           </div>
           <div>
-            <h4 className="text-[15px] font-bold text-[var(--text-primary)] leading-none">{post.author.name}</h4>
+            <h2 className="text-[15px] font-bold text-[var(--text-primary)] leading-none">{post.author.name}</h2>
             <div className="flex items-center gap-2 mt-1.5">
               <span className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">{post.author.role}</span>
               <span className="w-1 h-1 rounded-full bg-[var(--border-primary)]" />
@@ -47,7 +47,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             </div>
           </div>
         </div>
-        <button className="p-2.5 hover:bg-[var(--bg-tertiary)] rounded-xl transition-all text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
+        <button aria-label="More options" className="p-2.5 hover:bg-[var(--bg-tertiary)] rounded-xl transition-all text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
           <MoreHorizontal className="w-5 h-5" />
         </button>
       </div>
@@ -87,7 +87,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                   <p className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mt-1">Academic Resource • PDF</p>
                 </div>
               </div>
-              <button className="w-10 h-10 rounded-xl bg-[var(--text-primary)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[var(--text-primary)]/10">
+              <button aria-label="Download resource" className="w-10 h-10 rounded-xl bg-[var(--text-primary)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[var(--text-primary)]/10">
                 <Download className="w-4 h-4 text-[var(--bg-primary)]" />
               </button>
             </div>
@@ -98,13 +98,13 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       {/* Interaction Footer */}
       <div className="flex items-center justify-between pt-5 border-t border-[var(--border-subtle)]/50">
         <div className="flex items-center gap-6">
-          <button className="flex items-center gap-2 group text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+          <button aria-label="Like post" className="flex items-center gap-2 group text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
             <div className="p-2 rounded-xl group-hover:bg-[var(--bg-tertiary)] transition-all">
               <Heart className="w-4.5 h-4.5 group-hover:fill-[var(--danger)] group-hover:text-[var(--danger)]" />
             </div>
             <span className="text-[12px] font-bold">{post.stats.likes}</span>
           </button>
-          <button className="flex items-center gap-2 group text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+          <button aria-label="Comment on post" className="flex items-center gap-2 group text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
             <div className="p-2 rounded-xl group-hover:bg-[var(--bg-tertiary)] transition-all">
               <MessageSquare className="w-4.5 h-4.5" />
             </div>

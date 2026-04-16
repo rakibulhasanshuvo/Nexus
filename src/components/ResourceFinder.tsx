@@ -140,8 +140,8 @@ const ResourceFinderInner: React.FC = () => {
     <div className="space-y-8 animate-fade-in w-full flex flex-col min-h-screen pb-20">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-tertiary)] mb-2">BOU Official Curriculum</h2>
-          <h3 className="text-3xl font-black tracking-tight text-[var(--text-primary)] uppercase">Syllabus Vault<br/>& PYQ Analyzer</h3>
+          <h1 className="text-3xl font-black tracking-tight text-[var(--text-primary)] uppercase">Syllabus Vault<br/>& PYQ Analyzer</h1>
+          <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-tertiary)] mt-2">BOU Official Curriculum</h2>
           <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mt-2 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse" />
             AI & Server-Actions Secured
@@ -187,16 +187,16 @@ const ResourceFinderInner: React.FC = () => {
           <div className="w-24 h-24 rounded-[32px] bg-[var(--bg-secondary)] shadow-2xl flex items-center justify-center mb-10 border border-[var(--border-subtle)] z-10">
             <Search className="w-10 h-10 text-[var(--text-tertiary)]/30" />
           </div>
-          <h4 className="text-[18px] lg:text-[24px] font-black text-[var(--text-primary)] uppercase tracking-[0.3em] mb-4 text-center z-10 leading-tight">
+          <h3 className="text-[18px] lg:text-[24px] font-black text-[var(--text-primary)] uppercase tracking-[0.3em] mb-4 text-center z-10 leading-tight">
             Select Course to <br/> Unlock Syllabus Vault
-          </h4>
+          </h3>
           <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest max-w-md text-center leading-relaxed z-10">
             Load a course to view official BOU modules, high-yield PYQ exam tags, and instantly generate assignment outlines or study cheat sheets.
           </p>
         </div>
       ) : !courseDetail ? (
         <div className="flex-1 apple-card bg-[var(--bg-tertiary)]/50 border-dashed border-2 border-[var(--warning)]/50 flex flex-col items-center justify-center p-12 lg:p-20 relative">
-           <h4 className="text-[18px] font-black text-[var(--text-primary)] uppercase tracking-[0.3em] mb-4 text-center">Module Data Pending</h4>
+           <h3 className="text-[18px] font-black text-[var(--text-primary)] uppercase tracking-[0.3em] mb-4 text-center">Module Data Pending</h3>
            <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest max-w-md text-center">We are still digitizing the syllabus map for this specific course. Please check Phase 1 courses (e.g. Structured Programming or Physics).</p>
         </div>
       ) : (
@@ -218,7 +218,7 @@ const ResourceFinderInner: React.FC = () => {
                       U{module.unit}
                     </div>
                     <div>
-                      <h4 className="text-[16px] font-black tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors uppercase">{module.title}</h4>
+                      <h3 className="text-[16px] font-black tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors uppercase">{module.title}</h3>
                       <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                         {module.isHighYield && (
                           <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-[var(--danger)] bg-[var(--danger)]/5 border border-[var(--danger)]/10 px-2 py-0.5 rounded-md">
@@ -254,7 +254,7 @@ const ResourceFinderInner: React.FC = () => {
                           <div className="flex items-center justify-between z-10">
                             <div className="flex items-center gap-2">
                               <Bot className="w-5 h-5 text-[var(--accent)]" />
-                              <h5 className="font-black text-[11px] text-[var(--text-primary)] uppercase tracking-[0.2em]">1-Page Cheat Sheet</h5>
+                              <h4 className="font-black text-[11px] text-[var(--text-primary)] uppercase tracking-[0.2em]">1-Page Cheat Sheet</h4>
                             </div>
                             {cheatSheets[module.id] && <CheckCircle className="w-4 h-4 text-[var(--success)]" />}
                           </div>
@@ -270,6 +270,7 @@ const ResourceFinderInner: React.FC = () => {
                             </div>
                           ) : (
                             <button
+                              aria-label="Generate 1-Page Summary"
                               onClick={(e) => handleGenerateCheatSheet(e, module.id, module.title, module.topics)}
                               disabled={loadingActionId !== null}
                               className="mt-auto h-12 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 z-10"
@@ -286,7 +287,7 @@ const ResourceFinderInner: React.FC = () => {
                           <div className="flex items-center justify-between z-10">
                             <div className="flex items-center gap-2">
                               <PenTool className="w-5 h-5 text-[var(--accent)]" />
-                              <h5 className="text-[12px] font-black uppercase tracking-widest text-[var(--text-primary)]">TMA Expert</h5>
+                              <h4 className="text-[12px] font-black uppercase tracking-widest text-[var(--text-primary)]">TMA Expert</h4>
                             </div>
                             {tmaOutlines[module.id] && <CheckCircle className="w-4 h-4 text-[var(--success)]" />}
                           </div>
@@ -310,6 +311,7 @@ const ResourceFinderInner: React.FC = () => {
                             </div>
                           ) : (
                             <button
+                              aria-label="Generate TMA Strategy"
                               disabled={loadingActionId !== null}
                               onClick={(e) => handleGenerateTMAOutline(e, module.id, module.title)}
                               className="mt-auto h-12 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 disabled:bg-[var(--bg-tertiary)] disabled:text-[var(--text-tertiary)] z-10"
@@ -326,7 +328,7 @@ const ResourceFinderInner: React.FC = () => {
                           <div className="flex items-center justify-between z-10">
                             <div className="flex items-center gap-2">
                               <PlayCircle className="w-5 h-5 text-[var(--danger)]" />
-                              <h5 className="font-black text-[11px] text-[var(--text-primary)] uppercase tracking-[0.2em]">Curated Resources</h5>
+                              <h4 className="font-black text-[11px] text-[var(--text-primary)] uppercase tracking-[0.2em]">Curated Resources</h4>
                             </div>
                             {tutorials[module.id] && <CheckCircle className="w-4 h-4 text-[var(--success)]" />}
                           </div>
@@ -373,9 +375,9 @@ const ResourceFinderInner: React.FC = () => {
                                           {tut.language}
                                         </span>
                                       </div>
-                                      <h6 className="text-[13px] font-black leading-tight mb-1 text-[var(--text-primary)] group-hover/card:text-[var(--danger)] transition-colors">
+                                      <h5 className="text-[13px] font-black leading-tight mb-1 text-[var(--text-primary)] group-hover/card:text-[var(--danger)] transition-colors">
                                         {tut.title}
-                                      </h6>
+                                      </h5>
                                       <p className="text-[10px] font-bold text-[var(--text-tertiary)] leading-snug line-clamp-2">
                                         {tut.reason}
                                       </p>
@@ -384,6 +386,7 @@ const ResourceFinderInner: React.FC = () => {
                                 </a>
                               ))}
                               <button
+                                aria-label="Find Video Lectures"
                                 onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics)}
                                 disabled={loadingActionId !== null}
                                 className="mt-2 h-10 w-full rounded-xl border-2 border-dashed border-[var(--border-subtle)] text-[var(--text-tertiary)] text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 shrink-0"
@@ -394,6 +397,7 @@ const ResourceFinderInner: React.FC = () => {
                             </div>
                           ) : (
                             <button
+                              aria-label="Find Video Content"
                               onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics)}
                               disabled={loadingActionId !== null}
                               className="mt-auto h-12 rounded-xl bg-[var(--danger)] text-[var(--bg-primary)] text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-colors disabled:opacity-50 z-10 shrink-0"

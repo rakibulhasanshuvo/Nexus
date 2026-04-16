@@ -5,7 +5,7 @@ import PostCard from './PostCard';
 import CreatePost from './CreatePost';
 
 interface PostMedia {
-  type: 'document' | 'video';
+  type: 'document' | 'video' | 'image';
   url: string;
   title: string;
   thumbnail?: string;
@@ -60,15 +60,15 @@ const VortexaFeed: React.FC = () => {
     }
   ]);
 
-  const handlePostCreated = useCallback((content: string, file: { name: string; type: string } | null) => {
+  const handlePostCreated = useCallback((content: string, file: { name: string; type: string; url: string } | null) => {
     const postToAdd = {
       id: Date.now().toString(),
       author: { name: 'My Profile', role: 'Student', avatar: '' },
       content: content,
       timestamp: 'Just now',
       media: file ? {
-        type: 'document' as const,
-        url: '#',
+        type: file.type.startsWith('image/') ? 'image' as const : 'document' as const,
+        url: file.url,
         title: file.name
       } : undefined,
       stats: { likes: 0, comments: 0 }

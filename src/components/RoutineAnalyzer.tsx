@@ -69,7 +69,7 @@ const RoutineAnalyzer: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Routine Analyzer</h2>
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Routine Analyzer</h1>
         <p className="text-sm text-[var(--text-tertiary)] mt-1">Upload your exam routine image to extract the schedule</p>
       </div>
 
@@ -79,7 +79,7 @@ const RoutineAnalyzer: React.FC = () => {
           <div className="w-16 h-16 rounded-2xl bg-[var(--accent)] flex items-center justify-center mb-6 shadow-xl shadow-[var(--accent)]/20">
             <ImageIcon className="w-8 h-8 text-[var(--bg-primary)]" />
           </div>
-          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">Upload Exam Routine</h3>
+          <h2 className="text-lg font-bold text-[var(--text-primary)] mb-2">Upload Exam Routine</h2>
           <p className="text-sm text-[var(--text-tertiary)] max-w-sm mb-6 font-medium">
             Upload a photo or screenshot of your BOU exam routine. AI will extract dates and courses automatically.
           </p>
@@ -99,7 +99,7 @@ const RoutineAnalyzer: React.FC = () => {
       {routine.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-[var(--text-primary)]">Extracted Schedule</h3>
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">Extracted Schedule</h2>
             <button onClick={clearRoutine} className="apple-btn-secondary text-xs flex items-center gap-1">
               <Trash2 className="w-3.5 h-3.5" /> Clear
             </button>

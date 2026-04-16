@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   GraduationCap, MessageSquare, Calculator, BookOpen, Calendar, Mic, Home,
-  Library, Clock, LayoutDashboard, MapPin, Menu, X, ChevronRight
+  Library, Clock, LayoutDashboard, MapPin, Menu, X, ChevronRight, UserCircle
 } from 'lucide-react';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { APIKeyManager } from '../../components/APIKeyManager';
@@ -25,6 +25,7 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
     { id: 'vault', label: 'Academic Vault', icon: LayoutDashboard, href: '/vault' },
     { id: 'resources', label: 'Resources', icon: Library, href: '/resources' },
     { id: 'viva', label: 'Viva Simulator', icon: Mic, href: '/viva' },
+    { id: 'profile', label: 'Profile', icon: UserCircle, href: '/profile' },
   ];
 
   const toolsItems = [

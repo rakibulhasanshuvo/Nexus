@@ -92,6 +92,11 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               </button>
             </div>
           )}
+          {post.media.type === 'image' && (
+             <div className="bg-[var(--bg-tertiary)] flex justify-center w-full">
+               <img src={post.media.url} alt={post.media.title || 'Feed Image'} className="max-h-[500px] w-auto object-contain" />
+             </div>
+          )}
         </div>
       )}
 

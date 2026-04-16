@@ -75,6 +75,7 @@ export const APIKeyManager: React.FC = () => {
               />
               <button
                 onClick={() => setShowKey(!showKey)}
+                aria-label={showKey ? "Hide API Key" : "Show API Key"}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
               >
                 {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

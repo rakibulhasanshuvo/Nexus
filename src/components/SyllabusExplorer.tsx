@@ -140,7 +140,7 @@ const SyllabusExplorer: React.FC = () => {
                   {/* Topics */}
                   {details.topics && details.topics.length > 0 && (
                     <div className="px-5 py-4 border-t border-[var(--border-subtle)]">
-                      <h4 className="section-header mb-3">Key Topics</h4>
+                      <h3 className="section-header mb-3">Key Topics</h3>
                       <div className="flex flex-wrap gap-2">
                         {details.topics.map(topic => (
                           <span key={topic} className="apple-badge apple-badge-blue">{topic}</span>
@@ -152,7 +152,7 @@ const SyllabusExplorer: React.FC = () => {
                   {/* Books */}
                   {details.books && details.books.length > 0 && (
                     <div className="px-5 py-4 border-t border-[var(--border-subtle)]">
-                      <h4 className="section-header mb-3">Reference Books</h4>
+                      <h3 className="section-header mb-3">Reference Books</h3>
                       <div className="space-y-2">
                         {details.books.map((book, idx) => (
                           <p key={idx} className="text-sm text-[var(--text-secondary)]">
@@ -167,14 +167,14 @@ const SyllabusExplorer: React.FC = () => {
                   {/* Roadmap */}
                   {roadmap.length > 0 && (
                     <div className="px-5 py-4 border-t border-[var(--border-subtle)]">
-                      <h4 className="section-header mb-3">Syllabus Roadmap</h4>
+                      <h3 className="section-header mb-3">Syllabus Roadmap</h3>
                       <div className="space-y-2">
                         {roadmap.map((item, idx) => {
                           const done = progress[course.id]?.[idx] || false;
                           return (
                             <div key={idx}>
                               <div className="flex items-center gap-3 py-2 group">
-                                <button onClick={() => toggleTopic(course.id, idx)}>
+                                <button aria-label={done ? "Mark topic as incomplete" : "Mark topic as complete"} onClick={() => toggleTopic(course.id, idx)}>
                                   {done ? (
                                     <CheckCircle2 className="w-5 h-5 text-[var(--success)]" />
                                   ) : (
@@ -189,6 +189,7 @@ const SyllabusExplorer: React.FC = () => {
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <button
                                     onClick={() => explain(course.name, item.topic, course.id)}
+                                    aria-label="Explain topic"
                                     className="p-1.5 rounded-lg hover:bg-[var(--bg-primary)] text-[var(--text-tertiary)] hover:text-[var(--warning)] transition-colors"
                                     title="Explain"
                                   >
@@ -196,6 +197,7 @@ const SyllabusExplorer: React.FC = () => {
                                   </button>
                                   <button
                                     onClick={() => startQuiz(course.name, item.topic)}
+                                    aria-label="Start Quiz on topic"
                                     className="p-1.5 rounded-lg hover:bg-[var(--bg-primary)] text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors"
                                     title="Quiz"
                                   >
@@ -220,7 +222,7 @@ const SyllabusExplorer: React.FC = () => {
                   {/* Exam Intel */}
                   {details.exam_intel && details.exam_intel.length > 0 && (
                     <div className="px-5 py-4 border-t border-[var(--border-subtle)] bg-[var(--bg-tertiary)]/50">
-                      <h4 className="section-header mb-3 text-[var(--danger)]">🔥 Exam Intel</h4>
+                      <h3 className="section-header mb-3 text-[var(--danger)]">🔥 Exam Intel</h3>
                       <ul className="space-y-1">
                         {details.exam_intel.map((tip, idx) => (
                           <li key={idx} className="text-sm text-[var(--text-secondary)] flex items-start gap-2">

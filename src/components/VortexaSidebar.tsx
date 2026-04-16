@@ -37,9 +37,9 @@ const VortexaSidebar: React.FC<VortexaSidebarProps> = ({ stats }) => {
         <div className="absolute top-0 right-0 p-5 opacity-5 dark:opacity-[0.02]">
           <Award className="w-20 h-20 text-[var(--text-primary)]" />
         </div>
-        <h3 className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-6 flex items-center gap-2">
+        <h2 className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-6 flex items-center gap-2">
           Academic Overview
-        </h3>
+        </h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-4xl font-bold text-[var(--text-primary)] tracking-tight">
@@ -64,9 +64,9 @@ const VortexaSidebar: React.FC<VortexaSidebarProps> = ({ stats }) => {
 
       {/* Upcoming Deadlines */}
       <div className="apple-card p-5 bg-[var(--text-primary)] text-[var(--bg-primary)] border-none shadow-[var(--card-shadow-elevated)] transition-all hover:scale-[1.02] duration-500">
-        <h3 className="text-[11px] font-bold uppercase tracking-widest text-[var(--bg-primary)]/50 mb-8 flex items-center gap-2">
+        <h2 className="text-[11px] font-bold uppercase tracking-widest text-[var(--bg-primary)]/50 mb-8 flex items-center gap-2">
           <Calendar className="w-4 h-4" /> Deadlines
-        </h3>
+        </h2>
         <div className="space-y-6">
           <div className="flex gap-5">
             <div className="h-12 w-1.5 bg-[var(--danger)] rounded-full shadow-[0_0_12px_rgba(239,68,68,0.4)]" />
@@ -88,9 +88,9 @@ const VortexaSidebar: React.FC<VortexaSidebarProps> = ({ stats }) => {
       {/* Study Circles Widget */}
       <div className="apple-card p-5 bg-[var(--bg-secondary)] border-[var(--border-subtle)] shadow-[var(--card-shadow)]">
         <div className="flex items-center justify-between mb-8">
-          <h3 className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] flex items-center gap-2">
+          <h2 className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] flex items-center gap-2">
             <Users className="w-4 h-4" /> Study Circles
-          </h3>
+          </h2>
           <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--success-subtle)] border border-[var(--success)]/20">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)] shadow-[var(--success-glow)]" />
             <span className="text-[10px] font-bold text-[var(--success)] uppercase tracking-widest">Live</span>

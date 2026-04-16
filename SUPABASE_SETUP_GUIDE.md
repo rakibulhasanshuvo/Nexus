@@ -111,6 +111,39 @@ create table public.flashcards (
 
 
 -- ==========================================
+-- 8. Feed Posts Table
+-- ==========================================
+create table public.posts (
+  id uuid default uuid_generate_v4() primary key,
+  author_id uuid references public.profiles(id) on delete cascade not null,
+  content text not null,
+  image_url text,
+  likes integer default 0,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- ==========================================
+-- Storage Buckets & Policies
+-- ==========================================
+
+-- Insert buckets (run this in SQL or create via UI)
+insert into storage.buckets (id, name, public) values ('avatars', 'avatars', true);
+insert into storage.buckets (id, name, public) values ('feed-images', 'feed-images', true);
+
+-- Avatars Policies
+create policy "Avatar images are publicly accessible." on storage.objects for select using (bucket_id = 'avatars');
+create policy "Anyone can upload an avatar." on storage.objects for insert with check (bucket_id = 'avatars');
+create policy "Anyone can update their avatar." on storage.objects for update with check (bucket_id = 'avatars');
+create policy "Anyone can delete their avatar." on storage.objects for delete using (bucket_id = 'avatars');
+
+-- Feed Images Policies
+create policy "Feed images are publicly accessible." on storage.objects for select using (bucket_id = 'feed-images');
+create policy "Anyone can upload feed images." on storage.objects for insert with check (bucket_id = 'feed-images');
+create policy "Anyone can update feed images." on storage.objects for update with check (bucket_id = 'feed-images');
+create policy "Anyone can delete feed images." on storage.objects for delete using (bucket_id = 'feed-images');
+
+-- ==========================================
 -- Functions & Triggers
 -- ==========================================
 
@@ -131,6 +164,7 @@ create trigger handle_chat_sessions_updated_at before update on public.chat_sess
 create trigger handle_user_routines_updated_at before update on public.user_routines for each row execute procedure public.handle_updated_at();
 create trigger handle_course_progress_updated_at before update on public.course_progress for each row execute procedure public.handle_updated_at();
 create trigger handle_flashcards_updated_at before update on public.flashcards for each row execute procedure public.handle_updated_at();
+create trigger handle_posts_updated_at before update on public.posts for each row execute procedure public.handle_updated_at();
 
 -- Function to automatically create profile on signup
 create or replace function public.handle_new_user()
@@ -180,6 +214,13 @@ create policy "Users can manage own course progress" on public.course_progress f
 
 -- Flashcards: Users can perform all operations on their own data
 create policy "Users can manage own flashcards" on public.flashcards for all using (auth.uid() = user_id);
+
+-- Posts: Anyone can view posts, users can manage their own
+alter table public.posts enable row level security;
+create policy "Anyone can view posts" on public.posts for select using (true);
+create policy "Users can insert own posts" on public.posts for insert with check (auth.uid() = author_id);
+create policy "Users can update own posts" on public.posts for update using (auth.uid() = author_id);
+create policy "Users can delete own posts" on public.posts for delete using (auth.uid() = author_id);
 
 ```
 -- In order to allow useSyncedData to work with vault results correctly as a JSON store

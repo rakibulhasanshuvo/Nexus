@@ -42,6 +42,18 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
     item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
   )?.id || 'dashboard';
 
+  // Handle mobile menu overflow
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+
   // Redirect to login if not authenticated and not loading
   useEffect(() => {
     if (!isLoading && !user && pathname !== '/login') {

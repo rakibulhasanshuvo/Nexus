@@ -118,7 +118,7 @@ const ChatBot: React.FC = () => {
       
       {/* 1. Left Sidebar: History & Modes (Hidden on small screens) */}
       <div className="hidden xl:flex w-[220px] flex-col bg-[var(--bg-secondary)] border-r border-[var(--border-subtle)] p-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-4 px-2">Knowledge Modes</h3>
+        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-4 px-2">Knowledge Modes</h2>
         <div className="space-y-1 mb-8">
           {(Object.keys(modeThemes) as CounselorMode[]).map((m) => {
             const Theme = modeThemes[m];
@@ -139,7 +139,7 @@ const ChatBot: React.FC = () => {
           })}
         </div>
 
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-4 px-2">Past Advice</h3>
+        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-4 px-2">Past Advice</h2>
         <div className="flex-1 overflow-y-auto space-y-1 apple-scrollbar">
           {history.map(item => (
             <button key={item.id} className="w-full text-left p-3 rounded-xl hover:bg-[var(--bg-tertiary)] group flex flex-col gap-1">
@@ -163,7 +163,7 @@ const ChatBot: React.FC = () => {
               <Bot className="w-5 h-5 text-[var(--bg-primary)]" />
             </div>
             <div>
-              <h2 className="text-[15px] font-black tracking-tight text-[var(--text-primary)] leading-none">AI Academic Counselor</h2>
+              <h1 className="text-[15px] font-black tracking-tight text-[var(--text-primary)] leading-none">AI Academic Counselor</h1>
               <div className="flex items-center gap-2 mt-1.5">
                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--success)]">Counselor Online</span>
                 <span className="w-1 h-1 rounded-full bg-[var(--border-subtle)]" />
@@ -171,7 +171,7 @@ const ChatBot: React.FC = () => {
               </div>
             </div>
           </div>
-          <button onClick={resetChat} className="p-2.5 rounded-xl hover:bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all">
+          <button aria-label="Reset chat" onClick={resetChat} className="p-2.5 rounded-xl hover:bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all">
             <RotateCw className="w-5 h-5" />
           </button>
         </div>
@@ -183,7 +183,7 @@ const ChatBot: React.FC = () => {
               <div className={`w-16 h-16 rounded-3xl bg-gradient-to-br ${modeThemes[mode].color} flex items-center justify-center mb-6 shadow-[var(--card-shadow-elevated)] scale-110`}>
                 <Sparkles className="w-10 h-10 text-[var(--bg-primary)]" />
               </div>
-              <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight mb-3">Welcome to Vortexa AI</h3>
+              <h2 className="text-xl font-black text-[var(--text-primary)] tracking-tight mb-3">Welcome to Vortexa AI</h2>
               <p className="text-[13px] font-medium text-[var(--text-tertiary)] leading-relaxed mb-10">
                 I assist BOU students with exam strategy, degree planning, and assignments. How can I help you today?
               </p>
@@ -265,6 +265,7 @@ const ChatBot: React.FC = () => {
               disabled={isLoading}
             />
             <button
+              aria-label="Send message"
               onClick={() => sendMessage()}
               disabled={isLoading || !input.trim()}
               className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
@@ -281,7 +282,7 @@ const ChatBot: React.FC = () => {
 
       {/* 3. Right Sidebar: Academic Lens (Desktop Focus) */}
       <div className="hidden 2xl:flex w-[260px] flex-col bg-[var(--bg-secondary)] border-l border-[var(--border-subtle)] p-5 animate-apple-in">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-4">Academic Lens</h3>
+        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-4">Academic Lens</h2>
         
         {/* Real-time Stats */}
         <div className="space-y-3 mb-8">
@@ -307,7 +308,7 @@ const ChatBot: React.FC = () => {
         </div>
 
         {/* Smart Actions */}
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-4">Smart Actions</h3>
+        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-4">Smart Actions</h2>
         <div className="space-y-2">
           {[
             { label: 'Analyze my GPA', icon: Target },

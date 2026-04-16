@@ -34,7 +34,7 @@ const CGPAVault: React.FC = () => {
             <span className="text-[var(--text-primary)]">Vault & Predictor</span>
           </div>
           <div className="flex items-baseline gap-3">
-            <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Academic Central</h2>
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Academic Central</h1>
             <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]">v3.5 Refactor</span>
           </div>
         </div>
@@ -79,7 +79,7 @@ const CGPAVault: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-6">
                <div className="lg:col-span-8">
                   <div className="apple-card p-6 bg-[var(--bg-secondary)] border border-[var(--border-subtle)] shadow-sm">
-                    <h3 className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-widest mb-10">BSc CSE Degree Milestones</h3>
+                    <h2 className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-widest mb-10">BSc CSE Degree Milestones</h2>
                     <div className="relative pt-6 pb-2 px-4">
                         <div className="absolute top-[28px] left-10 right-10 h-[2px] bg-[var(--border-subtle)]" />
                         <div className="relative flex justify-between">
@@ -107,7 +107,7 @@ const CGPAVault: React.FC = () => {
                   <div className="apple-card p-6 bg-[var(--bg-secondary)] border border-[var(--border-subtle)] shadow-sm">
                     <div className="flex items-center gap-2 mb-6 border-b border-[var(--border-subtle)] pb-3">
                       <Cpu className="w-4 h-4 text-[var(--text-primary)]" />
-                      <h3 className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-widest">Engineer Profile</h3>
+                      <h2 className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-widest">Engineer Profile</h2>
                     </div>
                     
                     <div className="space-y-6">

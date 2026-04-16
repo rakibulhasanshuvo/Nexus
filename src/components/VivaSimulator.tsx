@@ -112,8 +112,8 @@ const VivaSimulator: React.FC = () => {
         {/* Header split */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-tertiary)] mb-2">Examination Module</h2>
-            <h3 className="text-3xl font-black tracking-tight text-[var(--text-primary)] uppercase">Viva Simulator</h3>
+            <h1 className="text-3xl font-black tracking-tight text-[var(--text-primary)] uppercase">Viva Simulator</h1>
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-tertiary)] mt-2">Examination Module</h2>
             <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mt-2 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[var(--danger)] animate-pulse" />
               Active Voice-AI Proctor · Practical Assessment
@@ -184,7 +184,7 @@ const VivaSimulator: React.FC = () => {
 
           {/* Right Panel: Metrics & Stats */}
           <div className="w-full lg:w-[45%] flex flex-col justify-center p-8 lg:p-16 gap-6 relative z-10 bg-[var(--bg-secondary)]/10 backdrop-blur-3xl">
-            <h5 className="text-[9px] font-black uppercase tracking-[0.4em] text-[var(--text-tertiary)] mb-2">Active Examiner Protocols</h5>
+            <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-[var(--text-tertiary)] mb-2">Active Examiner Protocols</h4>
             
             <div className="grid grid-cols-1 gap-4">
               <div className="apple-card bg-[var(--bg-secondary)] p-6 shadow-sm border border-[var(--border-subtle)] flex items-center gap-6 group/item hover:border-[var(--accent)]/50 transition-colors">
@@ -247,8 +247,8 @@ const VivaSimulator: React.FC = () => {
                <Bot className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-[9px] font-black uppercase tracking-[0.4em] text-[var(--text-tertiary)] mb-1">Board Examiner AI</h2>
-              <h3 className="text-lg font-black tracking-tight text-[var(--text-primary)] uppercase">{semester.courses.find(c => c.id === selectedCourse)?.name}</h3>
+              <h2 className="text-lg font-black tracking-tight text-[var(--text-primary)] uppercase">{semester.courses.find(c => c.id === selectedCourse)?.name}</h2>
+              <h3 className="text-[9px] font-black uppercase tracking-[0.4em] text-[var(--text-tertiary)] mt-1">Board Examiner AI</h3>
             </div>
           </div>
           <button 
@@ -321,6 +321,7 @@ const VivaSimulator: React.FC = () => {
                 disabled={isLoading}
               />
               <button 
+                aria-label="Send answer"
                 onClick={sendAnswer} 
                 disabled={isLoading || !input.trim()} 
                 className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all active:scale-95 shrink-0 shadow-lg ${
@@ -340,7 +341,7 @@ const VivaSimulator: React.FC = () => {
           <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--bg-primary)]/10 blur-3xl rounded-full" />
           <div className="flex items-center gap-3 mb-8">
             <Clock className="w-5 h-5 text-[var(--bg-primary)]/50" />
-            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--bg-primary)]/40">Time Elapsed</h4>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--bg-primary)]/40">Time Elapsed</h3>
           </div>
           <p className="text-5xl font-black tracking-tighter text-[var(--bg-primary)] tabular-nums drop-shadow-lg">
             {formatTimer(timerSeconds)}
@@ -349,7 +350,7 @@ const VivaSimulator: React.FC = () => {
 
         <div className="apple-card bg-[var(--bg-secondary)] p-8 border border-[var(--border-subtle)] shadow-[var(--card-shadow)]">
           <div className="flex items-center justify-between mb-8">
-             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-tertiary)]">Live Evaluation</h4>
+             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-tertiary)]">Live Evaluation</h3>
              <Activity className="w-4 h-4 text-[var(--text-tertiary)]" />
           </div>
           
@@ -383,7 +384,7 @@ const VivaSimulator: React.FC = () => {
         </div>
 
         <div className="apple-card bg-[var(--warning)]/10 p-6 border-2 border-[var(--warning)]/20 shadow-sm mt-auto">
-          <h5 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--warning)] mb-2">Examiner Note</h5>
+          <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--warning)] mb-2">Examiner Note</h4>
           <p className="text-[11px] font-semibold text-[var(--warning)] leading-relaxed">
             The AI automatically scales difficulty based on your conceptual depth. Precise, structured answers yield higher scores.
           </p>

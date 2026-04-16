@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { COURSE_MAPPING, COURSE_DETAILS } from '@/lib/constants';
 import { explainTopicAction, generateQuizAction } from '@/app/actions/ai';
+import { useSyncedData } from '@/hooks/useSyncedData';
 import { BookOpen, ChevronDown, ChevronRight, CheckCircle2, Circle, Lightbulb, Loader2, HelpCircle } from 'lucide-react';
 
 interface TopicProgress {
@@ -12,22 +13,20 @@ interface TopicProgress {
 const SyllabusExplorer: React.FC = () => {
   const [selectedSemester, setSelectedSemester] = useState(0);
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
-  const [progress, setProgress] = useState<TopicProgress>({});
+  const [progress, setProgress] = useSyncedData<TopicProgress>(
+    'bou_syllabus_progress',
+    {},
+    'syllabus_progress',
+    undefined,
+    undefined,
+    'progress_data'
+  );
   const [explanation, setExplanation] = useState<{ courseId: string; topic: string; text: string } | null>(null);
   const [quiz, setQuiz] = useState<{ question: string; options: string[]; correctAnswer: number; explanation: string; selectedAnswer?: number } | null>(null);
   const [isExplaining, setIsExplaining] = useState(false);
   const [isQuizzing, setIsQuizzing] = useState(false);
 
   const semester = COURSE_MAPPING[selectedSemester];
-
-  useEffect(() => {
-    const saved = localStorage.getItem('bou_syllabus_progress');
-    if (saved) { try { setProgress(JSON.parse(saved)); } catch (e) { console.error(e); } }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('bou_syllabus_progress', JSON.stringify(progress));
-  }, [progress]);
 
   const toggleTopic = (courseId: string, weekIdx: number) => {
     setProgress(prev => ({

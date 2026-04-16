@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from 'react';
-import { useLocalStorage } from './useLocalStorage';
+import { useSyncedData } from './useSyncedData';
 import { SemesterResult } from '@/lib/types';
 import { COURSE_MAPPING } from '@/lib/constants';
 
@@ -12,7 +12,14 @@ const TOTAL_REQUIRED_CREDITS = 148;
  * Centralizes results, CGPA calculation, and progress tracking.
  */
 export function useAcademicStats() {
-  const [results, setResults] = useLocalStorage<SemesterResult[]>('bou_cgpa_vault', []);
+  const [results, setResults] = useSyncedData<SemesterResult[]>(
+    'bou_cgpa_vault',
+    [],
+    'vault_data',
+    undefined,
+    undefined,
+    'results_data'
+  );
 
   const stats = useMemo(() => {
     const totalCredits = results.reduce((acc, curr) => acc + (Number(curr.credits) || 0), 0);

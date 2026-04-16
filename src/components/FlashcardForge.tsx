@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { generateFlashcardsAction } from '@/app/actions/ai';
+import { useSyncedData } from '@/hooks/useSyncedData';
 import { 
   Sparkles, RotateCcw, CheckCircle2, 
   Circle, ChevronLeft, ChevronRight, 
@@ -23,25 +24,27 @@ interface FlashcardForgeProps {
 }
 
 const FlashcardForge: React.FC<FlashcardForgeProps> = ({ courseId, courseName, topics }) => {
-  const [cards, setCards] = useState<Flashcard[]>([]);
+  const [cards, setCards] = useSyncedData<Flashcard[]>(
+    `bou_flashcards_${courseId}`,
+    [],
+    'flashcards',
+    'course_id',
+    courseId,
+    'cards_data'
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [masteryCount, setMasteryCount] = useState(0);
 
   useEffect(() => {
-    const saved = localStorage.getItem(`bou_flashcards_${courseId}`);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setCards(parsed);
-      setMasteryCount(parsed.filter((c: Flashcard) => c.isMastered).length);
+    if (cards) {
+      setMasteryCount(cards.filter((c: Flashcard) => c.isMastered).length);
     }
-  }, [courseId]);
+  }, [cards]);
 
   const saveCards = (newCards: Flashcard[]) => {
     setCards(newCards);
-    localStorage.setItem(`bou_flashcards_${courseId}`, JSON.stringify(newCards));
-    setMasteryCount(newCards.filter(c => c.isMastered).length);
   };
 
   const generateCards = async () => {

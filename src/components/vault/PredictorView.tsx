@@ -71,7 +71,7 @@ export const PredictorView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         <div className="lg:col-span-8 space-y-4">
           <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3 px-1">
-             <h3 className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-widest">Marks Input Matrix: S{selectedSemester + 1}</h3>
+             <h2 className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-widest">Marks Input Matrix: S{selectedSemester + 1}</h2>
              <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Scale: 0 - 100</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

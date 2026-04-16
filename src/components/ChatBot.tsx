@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { counselorChatAction } from '@/app/actions/ai';
 import { ChatMessage, SemesterResult } from '@/lib/types';
+import { useSyncedData } from '@/hooks/useSyncedData';
 import { 
   Send, RotateCw, Bot, User, Loader2, Sparkles, 
   ExternalLink, Calendar, Target, Award,
@@ -15,7 +16,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 type CounselorMode = 'general' | 'exam' | 'planning' | 'tma';
 
 const ChatBot: React.FC = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useSyncedData<ChatMessage[]>(
+    'bou_chat_history',
+    [],
+    'chat_sessions',
+    'mode',
+    'general',
+    'messages'
+  );
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<CounselorMode>('general');
@@ -44,13 +52,6 @@ const ChatBot: React.FC = () => {
 
   useEffect(() => {
     loadContext();
-    const savedChat = localStorage.getItem('bou_chat_history');
-    if (savedChat) {
-      try {
-        const parsed = JSON.parse(savedChat);
-        setMessages(parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
-      } catch (e) { console.error(e); }
-    }
     
     // Fake history for demo
     setHistory([
@@ -61,12 +62,6 @@ const ChatBot: React.FC = () => {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem('bou_chat_history', JSON.stringify(messages));
-    }
   }, [messages]);
 
   const sendMessage = async (overrideInput?: string) => {
@@ -102,6 +97,7 @@ const ChatBot: React.FC = () => {
   const resetChat = () => {
     setMessages([]);
     localStorage.removeItem('bou_chat_history');
+    // Supabase state is updated via setMessages([]), which handles the backend delete/overwrite implicitly if hooked up
   };
 
 

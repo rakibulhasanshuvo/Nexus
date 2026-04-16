@@ -3,23 +3,20 @@
 import React, { useState, useEffect } from 'react';
 import { extractRoutineAction } from '@/app/actions/ai';
 import { ExamRoutineItem } from '@/lib/types';
+import { useSyncedData } from '@/hooks/useSyncedData';
 import { Image as ImageIcon, Upload, Calendar, Loader2, Trash2, Clock } from 'lucide-react';
 
 const RoutineAnalyzer: React.FC = () => {
-  const [routine, setRoutine] = useState<ExamRoutineItem[]>([]);
+  const [routine, setRoutine] = useSyncedData<ExamRoutineItem[]>(
+    'bou_exam_routine',
+    [],
+    'user_routines',
+    undefined,
+    undefined,
+    'routine_data'
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('bou_exam_routine');
-    if (saved) { try { setRoutine(JSON.parse(saved)); } catch (e) { console.error(e); } }
-  }, []);
-
-  useEffect(() => {
-    if (routine.length > 0) {
-      localStorage.setItem('bou_exam_routine', JSON.stringify(routine));
-    }
-  }, [routine]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

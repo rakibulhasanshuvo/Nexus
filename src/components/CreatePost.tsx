@@ -2,26 +2,69 @@
 
 import React, { useState, useRef } from 'react';
 import { Plus, FileText, Send, X, Paperclip, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface CreatePostProps {
-  onPost: (content: string, file: { name: string; type: string; url: string } | null) => void;
+  onPost: (content: string, file: { name: string; type: string; url: string; path?: string } | null) => void;
 }
 
 const CreatePost: React.FC<CreatePostProps> = ({ onPost }) => {
   const [newPost, setNewPost] = useState('');
-  const [attachedFile, setAttachedFile] = useState<{name: string, type: string, url: string} | null>(null);
+  const [attachedFile, setAttachedFile] = useState<{name: string, type: string, url: string, file?: File} | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handlePost = () => {
+  const handlePost = async () => {
     if (!newPost.trim() && !attachedFile) return;
-    onPost(newPost, attachedFile);
-    setNewPost('');
-    setAttachedFile(null);
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'; // Reset height
+
+    setIsUploading(true);
+    try {
+      let fileData = null;
+
+      if (attachedFile?.file && supabase) {
+        const fileExt = attachedFile.file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('feed-media')
+          .upload(filePath, attachedFile.file);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('feed-media')
+          .getPublicUrl(filePath);
+
+        fileData = {
+          name: attachedFile.name,
+          type: attachedFile.type,
+          url: publicUrl,
+          path: filePath
+        };
+      } else if (attachedFile) {
+         fileData = {
+           name: attachedFile.name,
+           type: attachedFile.type,
+           url: attachedFile.url
+         };
+      }
+
+      onPost(newPost, fileData);
+      setNewPost('');
+      setAttachedFile(null);
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto'; // Reset height
+      }
+    } catch (error) {
+      console.error('Error posting:', error);
+      alert('Failed to upload file or create post. Please try again.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -35,13 +78,8 @@ const CreatePost: React.FC<CreatePostProps> = ({ onPost }) => {
          alert('File size must be less than 5MB.');
          return;
       }
-      setIsUploading(true);
-      // Mock upload
-      setTimeout(() => {
-        const objectUrl = URL.createObjectURL(file);
-        setAttachedFile({ name: file.name, type: file.type, url: objectUrl });
-        setIsUploading(false);
-      }, 1000);
+      const objectUrl = URL.createObjectURL(file);
+      setAttachedFile({ name: file.name, type: file.type, url: objectUrl, file: file });
     }
   };
 

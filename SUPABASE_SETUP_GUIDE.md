@@ -117,7 +117,9 @@ create table public.posts (
   id uuid default uuid_generate_v4() primary key,
   author_id uuid references public.profiles(id) on delete cascade not null,
   content text not null,
-  image_url text,
+  media_type text,
+  media_url text,
+  media_title text,
   likes integer default 0,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
@@ -129,7 +131,7 @@ create table public.posts (
 
 -- Insert buckets (run this in SQL or create via UI)
 insert into storage.buckets (id, name, public) values ('avatars', 'avatars', true);
-insert into storage.buckets (id, name, public) values ('feed-images', 'feed-images', true);
+insert into storage.buckets (id, name, public) values ('feed-media', 'feed-media', true);
 
 -- Avatars Policies
 create policy "Avatar images are publicly accessible." on storage.objects for select using (bucket_id = 'avatars');
@@ -137,11 +139,11 @@ create policy "Anyone can upload an avatar." on storage.objects for insert with 
 create policy "Anyone can update their avatar." on storage.objects for update with check (bucket_id = 'avatars');
 create policy "Anyone can delete their avatar." on storage.objects for delete using (bucket_id = 'avatars');
 
--- Feed Images Policies
-create policy "Feed images are publicly accessible." on storage.objects for select using (bucket_id = 'feed-images');
-create policy "Anyone can upload feed images." on storage.objects for insert with check (bucket_id = 'feed-images');
-create policy "Anyone can update feed images." on storage.objects for update with check (bucket_id = 'feed-images');
-create policy "Anyone can delete feed images." on storage.objects for delete using (bucket_id = 'feed-images');
+-- Feed Media Policies
+create policy "Feed media is publicly accessible." on storage.objects for select using (bucket_id = 'feed-media');
+create policy "Anyone can upload feed media." on storage.objects for insert with check (bucket_id = 'feed-media');
+create policy "Anyone can update feed media." on storage.objects for update with check (bucket_id = 'feed-media');
+create policy "Anyone can delete feed media." on storage.objects for delete using (bucket_id = 'feed-media');
 
 -- ==========================================
 -- Functions & Triggers

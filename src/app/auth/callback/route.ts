@@ -7,11 +7,7 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get('code');
 
   if (code) {
-    const cookieStore = cookies();
-
-    // We cannot construct the client fully because NEXT_PUBLIC_SUPABASE_URL and ANON_KEY might not be at runtime here easily without importing lib
-    // Wait, let's just use the client from our lib for exchange, actually let's use the standard setup
-    // Since this is a route handler we should use SSR client.
+    const cookieStore = await cookies();
 
     // Fallback: If missing env vars, don't crash the route handler
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';

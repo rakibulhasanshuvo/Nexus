@@ -4,6 +4,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { Plus, FileText, Send, X, Paperclip, Image as ImageIcon, Loader2 } from 'lucide-react';
 import PostCard from './PostCard';
 import CreatePost from './CreatePost';
+import Image from 'next/image';
 
 interface PostMedia {
   type: 'document' | 'video' | 'image';
@@ -172,8 +173,8 @@ const VortexaFeed: React.FC = () => {
               <div className="flex items-center justify-between p-5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] mt-5 animate-apple-in">
                 <div className="flex items-center gap-4">
                   {attachedFile.type.startsWith('image/') ? (
-                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-[var(--bg-tertiary)] flex items-center justify-center">
-                       <img src={attachedFile.url} alt={attachedFile.name} className="w-full h-full object-cover" />
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-[var(--bg-tertiary)] flex items-center justify-center relative">
+                       <Image src={attachedFile.url} alt={attachedFile.name} fill className="object-cover" />
                     </div>
                   ) : (
                     <div className="w-11 h-11 rounded-xl bg-[var(--text-primary)] flex items-center justify-center">

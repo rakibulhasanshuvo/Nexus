@@ -48,7 +48,7 @@ const CGPAVault: React.FC = () => {
           ].map((tab) => (
             <button 
               key={tab.id}
-              onClick={() => setView(tab.id as any)}
+              onClick={() => setView(tab.id as 'vault' | 'predictor' | 'transcript')}
               className={`flex items-center gap-2 px-5 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
                 view === tab.id 
                   ? 'bg-[var(--bg-secondary)] shadow-sm text-[var(--text-primary)]' 

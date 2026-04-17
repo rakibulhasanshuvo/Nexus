@@ -30,7 +30,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // If supabase client is null (missing env vars), just stop loading
     if (!supabase) {
-      if (isMounted) setIsLoading(false);
+      if (isMounted) {
+        setTimeout(() => setIsLoading(false), 0);
+      }
       return;
     }
 

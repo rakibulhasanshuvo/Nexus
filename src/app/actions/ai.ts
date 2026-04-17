@@ -87,16 +87,17 @@ export async function counselorChatAction(
   try {
     const response = await chat.sendMessage({ message });
     const groundingUrls = response.candidates?.[0]?.groundingMetadata?.groundingChunks
-      ?.map((c: any) => c.web?.uri)
-      .filter(Boolean) || [];
+      ?.map((c: { web?: { uri?: string } }) => c.web?.uri)
+      .filter((uri): uri is string => Boolean(uri)) || [];
 
     return {
       text: response.text || '',
       groundingUrls
     };
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Counselor chat error:", e);
-    throw new Error(`Counselor Error: ${e.message}`);
+    const message = e instanceof Error ? e.message : String(e);
+    throw new Error(`Counselor Error: ${message}`);
   }
 }
 

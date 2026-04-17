@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Save, User, BookOpen, UserCircle, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 // For now we'll mock the Supabase client until auth is fully implemented in a later phase.
 // In a real implementation we would import the initialized client.
@@ -90,7 +91,7 @@ export default function ProfilePage() {
               {isUploading ? (
                 <Loader2 className="w-8 h-8 text-[var(--text-tertiary)] animate-spin" />
               ) : profile.avatarUrl ? (
-                <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                <Image src={profile.avatarUrl} alt="Avatar" fill className="object-cover" />
               ) : (
                 <UserCircle className="w-20 h-20 text-[var(--text-tertiary)]" />
               )}

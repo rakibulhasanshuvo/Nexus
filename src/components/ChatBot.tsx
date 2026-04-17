@@ -86,8 +86,9 @@ const ChatBot: React.FC = () => {
         groundingUrls: response.groundingUrls
       };
       setMessages(prev => [...prev, botMsg]);
-    } catch (error: any) {
-      setMessages(prev => [...prev, { role: 'model', text: `⚠️ Counselor Error: ${error.message}`, timestamp: new Date() }]);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      setMessages(prev => [...prev, { role: 'model', text: `⚠️ Counselor Error: ${message}`, timestamp: new Date() }]);
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
@@ -329,7 +330,7 @@ const ChatBot: React.FC = () => {
         <div className="mt-auto pt-10">
           <div className="p-5 rounded-[24px] bg-gradient-to-br from-[var(--bg-tertiary)] to-[var(--bg-secondary)] border border-[var(--border-subtle)]">
             <p className="text-[11px] font-medium text-[var(--accent)] italic leading-relaxed text-center">
-              "Focus on the process, and the result will take care of itself."
+              &quot;Focus on the process, and the result will take care of itself.&quot;
             </p>
           </div>
         </div>

@@ -5,6 +5,7 @@ import {
   Heart, MessageSquare, Share2, MoreHorizontal, 
   Play, FileText, Download 
 } from 'lucide-react';
+import Image from 'next/image';
 
 interface PostCardProps {
   post: {
@@ -63,7 +64,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           {post.media.type === 'video' ? (
             <div className="aspect-video bg-[var(--bg-tertiary)] relative">
               {post.media.thumbnail ? (
-                <img src={post.media.thumbnail} alt={post.media.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                <Image src={post.media.thumbnail} alt={post.media.title || 'Video thumbnail'} fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black" />
               )}
@@ -93,8 +94,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             </div>
           )}
           {post.media.type === 'image' && (
-             <div className="bg-[var(--bg-tertiary)] flex justify-center w-full">
-               <img src={post.media.url} alt={post.media.title || 'Feed Image'} className="max-h-[500px] w-auto object-contain" />
+             <div className="bg-[var(--bg-tertiary)] flex justify-center w-full relative min-h-[300px]">
+               <Image src={post.media.url!} alt={post.media.title || 'Feed Image'} fill className="object-contain" />
              </div>
           )}
         </div>

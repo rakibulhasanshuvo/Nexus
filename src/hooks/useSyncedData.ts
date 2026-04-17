@@ -56,8 +56,11 @@ export function useSyncedData<T>(
             query = query.eq('user_id', userData.user.id);
 
             const { data, error } = await query.single();
+            if (error && error.code !== 'PGRST116') {
+              console.warn(`Supabase fetch error for ${key}:`, error);
+            }
 
-            const rowData = data as any;
+            const rowData = data as Record<string, unknown> | null;
             if (rowData && dataColumn && rowData[dataColumn] !== undefined && isMounted) {
                setStoredValue(rowData[dataColumn] as T);
                // Keep localstorage in sync
@@ -68,8 +71,8 @@ export function useSyncedData<T>(
                // We will assume dataColumn is passed for JSON blobs.
             }
           }
-        } catch (error) {
-          console.warn(`Supabase fetch failed for ${key}, using local data`, error);
+        } catch (err) {
+          console.warn(`Supabase fetch failed for ${key}, using local data`, err);
         }
       }
 
@@ -101,7 +104,7 @@ export function useSyncedData<T>(
           const { data: userData } = await supabase.auth.getUser();
           if (userData?.user) {
 
-            const payload: any = {
+            const payload: Record<string, unknown> = {
                user_id: userData.user.id,
                updated_at: new Date().toISOString()
             };

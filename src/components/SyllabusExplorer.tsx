@@ -51,8 +51,9 @@ const SyllabusExplorer: React.FC = () => {
     try {
       const text = await explainTopicAction(courseName, topic, userApiKey);
       setExplanation({ courseId, topic, text });
-    } catch (e: any) {
-      setExplanation({ courseId, topic, text: `⚠️ ${e.message}` });
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      setExplanation({ courseId, topic, text: `⚠️ ${message}` });
     } finally {
       setIsExplaining(false);
     }
@@ -65,7 +66,7 @@ const SyllabusExplorer: React.FC = () => {
     try {
       const result = await generateQuizAction(courseName, topic, userApiKey);
       if (result) setQuiz(result);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
     } finally {
       setIsQuizzing(false);

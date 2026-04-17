@@ -43,8 +43,9 @@ export default function LoginPage() {
 
       if (error) throw error;
       setMessage('Check your email for the login link!');
-    } catch (error: any) {
-      setMessage(error.message || 'An error occurred during login');
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'An error occurred during login';
+      setMessage(msg);
     } finally {
       setLoading(false);
     }
@@ -60,8 +61,9 @@ export default function LoginPage() {
           redirectTo: `${window.location.origin}/`,
         }
       });
-    } catch (error: any) {
-      setMessage(error.message || 'An error occurred during Google login');
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'An error occurred during Google login';
+      setMessage(msg);
     }
   };
 
@@ -149,7 +151,7 @@ export default function LoginPage() {
 
         {/* Footer info */}
         <p className="text-center text-[10px] font-medium text-[var(--text-tertiary)] mt-8">
-          By continuing, you agree to Vortexa's Academic Integrity Policy.
+          By continuing, you agree to Vortexa&apos;s Academic Integrity Policy.
         </p>
       </div>
     </div>

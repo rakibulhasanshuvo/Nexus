@@ -12,6 +12,7 @@ import { APIKeyManager } from '../../components/APIKeyManager';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogOut, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface LayoutShellProps {
   children: React.ReactNode;
@@ -152,9 +153,9 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
         <div className="p-4 pt-2 pb-6">
           <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-[var(--bg-secondary)]/50 border border-[var(--border-subtle)] shadow-sm group">
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-8 h-8 rounded-full bg-[var(--text-primary)] flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[var(--text-primary)] flex items-center justify-center shrink-0 relative overflow-hidden">
                 {user?.user_metadata?.avatar_url ? (
-                   <img src={user.user_metadata.avatar_url} alt="User Avatar" className="w-8 h-8 rounded-full object-cover" />
+                   <Image src={user.user_metadata.avatar_url} alt="User Avatar" fill className="object-cover" />
                 ) : (
                    <UserIcon className="w-4 h-4 text-[var(--bg-primary)]" />
                 )}

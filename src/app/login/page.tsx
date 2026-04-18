@@ -37,7 +37,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/`,
         },
       });
 
@@ -57,7 +57,7 @@ export default function LoginPage() {
       await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/`,
+          redirectTo: `${window.location.origin}/`,
         }
       });
     } catch (error: any) {

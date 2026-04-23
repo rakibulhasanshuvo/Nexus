@@ -25,7 +25,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onPost }) => {
 
       if (attachedFile?.file && supabase) {
         const fileExt = attachedFile.file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
         const filePath = `${fileName}`;
 
         const { error: uploadError } = await supabase.storage

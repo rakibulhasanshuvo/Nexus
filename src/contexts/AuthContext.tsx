@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
@@ -21,13 +20,31 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // MOCK AUTH: Automatically log in as Admin
+  const mockUser = {
+    id: '00000000-0000-0000-0000-000000000000',
+    app_metadata: {},
+    user_metadata: {
+      full_name: 'Admin',
+    },
+    aud: 'authenticated',
+    created_at: new Date().toISOString(),
+  } as User;
+
+  const [user] = useState<User | null>(mockUser);
+  const [session] = useState<Session | null>({
+    access_token: 'mock-token',
+    refresh_token: 'mock-refresh-token',
+    expires_in: 3600,
+    token_type: 'bearer',
+    user: mockUser,
+  });
+  const [isLoading] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
+    // let isMounted = true;
 
+    /* AUTH SYSTEM COMMENTED OUT FOR NOW
     // If supabase client is null (missing env vars), just stop loading
     if (!supabase) {
       if (isMounted) setIsLoading(false);
@@ -53,17 +70,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsLoading(false);
       }
     });
+    */
 
     return () => {
-      isMounted = false;
-      subscription.unsubscribe();
+      // isMounted = false;
+      // subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
+    console.log("Mock sign out clicked");
+    // if (supabase) {
+    //   await supabase.auth.signOut();
+    // }
   };
 
   return (

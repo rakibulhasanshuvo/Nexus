@@ -86,8 +86,8 @@ const ChatBot: React.FC = () => {
         groundingUrls: response.groundingUrls
       };
       setMessages(prev => [...prev, botMsg]);
-    } catch (error: any) {
-      setMessages(prev => [...prev, { role: 'model', text: `⚠️ Counselor Error: ${error.message}`, timestamp: new Date() }]);
+    } catch (error: unknown) {
+      setMessages(prev => [...prev, { role: 'model', text: `⚠️ Counselor Error: ${error instanceof Error ? error.message : String(error)}`, timestamp: new Date() }]);
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();

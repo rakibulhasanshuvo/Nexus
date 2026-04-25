@@ -56,9 +56,12 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
 
   // Redirect to login if not authenticated and not loading
   useEffect(() => {
+    // AUTH BYPASS: Don't redirect to login
+    /*
     if (!isLoading && !user && pathname !== '/login') {
       router.push('/login');
     }
+    */
   }, [user, isLoading, pathname, router]);
 
   // If we're on the login page, render full screen without shell
@@ -67,7 +70,7 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
   }
 
   // Show a blank or loading state while checking auth to prevent flash of content
-  if (isLoading || (!user && pathname !== '/login')) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
         <div className="w-8 h-8 rounded-full border-2 border-[var(--text-primary)] border-t-transparent animate-spin" />
@@ -148,35 +151,7 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
           </div>
         </div>
 
-        {/* User Profile Footer */}
-        <div className="p-4 pt-2 pb-6">
-          <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-[var(--bg-secondary)]/50 border border-[var(--border-subtle)] shadow-sm group">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-8 h-8 rounded-full bg-[var(--text-primary)] flex items-center justify-center shrink-0">
-                {user?.user_metadata?.avatar_url ? (
-                   <img src={user.user_metadata.avatar_url} alt="User Avatar" className="w-8 h-8 rounded-full object-cover" />
-                ) : (
-                   <UserIcon className="w-4 h-4 text-[var(--bg-primary)]" />
-                )}
-              </div>
-              <div className="flex flex-col overflow-hidden">
-                <span className="text-[12px] font-bold text-[var(--text-primary)] truncate">
-                  {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Student'}
-                </span>
-                <span className="text-[9px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest truncate">
-                  Logged In
-                </span>
-              </div>
-            </div>
-            <button
-              onClick={signOut}
-              className="text-[var(--text-tertiary)] hover:text-[var(--danger)] transition-colors opacity-0 group-hover:opacity-100"
-              title="Sign Out"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+        {/* User Profile Footer Hidden For Single User Mode */}
       </nav>
 
       {/* Main Area */}

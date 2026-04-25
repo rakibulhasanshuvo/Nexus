@@ -6,12 +6,12 @@ import { counselorChatAction } from '@/app/actions/ai';
 import { ChatMessage, SemesterResult } from '@/lib/types';
 import { useSyncedData } from '@/hooks/useSyncedData';
 import { 
-  Send, RotateCw, Bot, User, Loader2, Sparkles, 
-  ExternalLink, Calendar, Target, Award,
-  BookOpen, BrainCircuit, LayoutList, History,
-  Trash2, MessageSquare, Plus, ChevronLeft
+  Send, RotateCw, Bot, Loader2, Sparkles,
+  ExternalLink, Target, Award,
+  BookOpen, BrainCircuit, LayoutList,
+  Trash2, Plus
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 type CounselorMode = 'general' | 'exam' | 'planning' | 'tma';
 

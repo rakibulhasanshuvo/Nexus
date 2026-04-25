@@ -1,4 +1,5 @@
 "use server";
+import { AI_MODELS } from "@/lib/ai-config";
 
 import { GoogleGenAI, Type, Schema, Modality } from "@google/genai";
 import { StructuredTutorial, ExamRoutineItem } from "@/lib/types";
@@ -95,7 +96,7 @@ export async function counselorChatAction(
     }
 
     const chat = ai.chats.create({
-      model: 'gemini-1.5-flash',
+      model: AI_MODELS.DEFAULT_OPS,
       config: {
         systemInstruction: modeInstruction,
         tools: [{ googleSearch: {} }],
@@ -128,7 +129,7 @@ export async function vivaStartAction(
 ): Promise<string> {
   return await withRetry(async (ai) => {
     const chat = ai.chats.create({
-      model: 'gemini-1.5-flash',
+      model: AI_MODELS.DEFAULT_OPS,
       config: {
         systemInstruction: "You are an external examiner for a Computer Science Viva Voce. Ask deep conceptual questions. Be professional, strict but fair.",
       }
@@ -147,7 +148,7 @@ export async function vivaChatAction(
 ): Promise<string> {
   return await withRetry(async (ai) => {
     const chat = ai.chats.create({
-      model: 'gemini-1.5-flash',
+      model: AI_MODELS.DEFAULT_OPS,
       config: {
         systemInstruction: "You are an external examiner for a Computer Science Viva Voce. Ask deep conceptual questions. Be professional, strict but fair.",
       },
@@ -183,7 +184,7 @@ export async function generateSpeechAction(text: string, userApiKey?: string): P
 export async function explainTopicAction(courseName: string, topic: string, userApiKey?: string): Promise<string> {
   return await withRetry(async (ai) => {
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: AI_MODELS.DEFAULT_OPS,
       contents: `Explain the concept "${topic}" from the course "${courseName}" in 3 simple sentences. Focus on the 'Why' and 'How'.`,
     });
     return response.text || 'Explanation unavailable.';
@@ -198,7 +199,7 @@ export async function generateQuizAction(courseName: string, topic: string, user
 } | null> {
   return await withRetry(async (ai) => {
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: AI_MODELS.DEFAULT_OPS,
       contents: `Create a single multiple-choice question for "${topic}" (${courseName}). Return JSON: { "question": string, "options": string[], "correctAnswer": number (0-3), "explanation": string }`,
       config: { responseMimeType: "application/json" }
     });
@@ -234,7 +235,7 @@ export async function extractRoutineAction(
     };
 
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: AI_MODELS.DEFAULT_OPS,
       contents: {
         parts: [
           { inlineData: { data: base64Image, mimeType } },
@@ -277,7 +278,7 @@ CONSTRAINTS:
 
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: AI_MODELS.DEFAULT_OPS,
         contents: prompt,
       });
       return response.text || "Cheat sheet generation failed.";
@@ -305,7 +306,7 @@ CONSTRAINTS:
 
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: AI_MODELS.DEFAULT_OPS,
         contents: prompt,
       });
       return response.text || "TMA Outline generation failed.";
@@ -337,7 +338,7 @@ Respond ONLY with the requested JSON structure. Do NOT hallucinate URLs, provide
 
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: AI_MODELS.DEFAULT_OPS,
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -383,7 +384,7 @@ export async function generateFlashcardsAction(
 
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: AI_MODELS.DEFAULT_OPS,
         contents: prompt,
         config: { responseMimeType: "application/json" }
       });
@@ -409,7 +410,7 @@ export async function courseTutorChatAction(
 ): Promise<string> {
   return await withRetry(async (ai) => {
     const chat = ai.chats.create({
-      model: 'gemini-1.5-flash',
+      model: AI_MODELS.DEFAULT_OPS,
       config: {
         systemInstruction: `${SYSTEM_INSTRUCTION}\n\nYou are currently tutoring a student on "${courseName}" (${courseId}). ${courseOverview}`,
       },

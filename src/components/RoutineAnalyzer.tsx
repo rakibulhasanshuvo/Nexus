@@ -39,8 +39,8 @@ const RoutineAnalyzer: React.FC = () => {
         setIsLoading(false);
       };
       reader.readAsDataURL(file);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
       setIsLoading(false);
     }
   };

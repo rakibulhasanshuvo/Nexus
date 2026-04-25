@@ -52,8 +52,8 @@ const VivaSimulator: React.FC = () => {
       const firstQuestion = await vivaStartAction(course.name, course.id, details?.topics || [], userApiKey);
       setSession(true);
       setMessages([{ role: 'model', text: firstQuestion }]);
-    } catch (e: any) {
-      setMessages([{ role: 'model', text: `⚠️ Failed to start: ${e.message}` }]);
+    } catch (e: unknown) {
+      setMessages([{ role: 'model', text: `⚠️ Failed to start: ${e instanceof Error ? e.message : String(e)}` }]);
     } finally {
       setIsLoading(false);
     }
@@ -72,8 +72,8 @@ const VivaSimulator: React.FC = () => {
       const history = messages.map(m => ({ role: m.role, text: m.text }));
       const responseText = await vivaChatAction(userText, history, userApiKey);
       setMessages(prev => [...prev, { role: 'model', text: responseText }]);
-    } catch (e: any) {
-      setMessages(prev => [...prev, { role: 'model', text: `⚠️ Error: ${e.message}` }]);
+    } catch (e: unknown) {
+      setMessages(prev => [...prev, { role: 'model', text: `⚠️ Error: ${e instanceof Error ? e.message : String(e)}` }]);
     } finally {
       setIsLoading(false);
     }

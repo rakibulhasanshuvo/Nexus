@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Calculator, RotateCw, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { COURSE_MAPPING, ACADEMIC_RULES } from '@/lib/constants';
+import { COURSE_MAPPING, ACADEMIC_RULES, GRADING_BRACKETS } from '@/lib/constants';
 
 export const PredictorView: React.FC = () => {
   const [selectedSemester, setSelectedSemester] = useState(0);
@@ -12,10 +12,8 @@ export const PredictorView: React.FC = () => {
   const [prediction, setPrediction] = useState<{ gpa: number; courseResults: { name: string; total: number; grade: string; gradePoint: number }[] } | null>(null);
 
   const getGrade = (mark: number) => {
-    const brackets = ACADEMIC_RULES.grading_system.brackets;
-    for (const b of brackets) {
-      const [min, max] = b.range.split('-').map(Number);
-      if (mark >= min && mark <= max) return { grade: b.grade, point: b.point };
+    for (const b of GRADING_BRACKETS) {
+      if (mark >= b.min && mark <= b.max) return { grade: b.grade, point: b.point };
     }
     return { grade: 'F', point: 0 };
   };

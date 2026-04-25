@@ -33,6 +33,11 @@ export const ACADEMIC_RULES: AcademicRules = {
   }
 };
 
+export const GRADING_BRACKETS = ACADEMIC_RULES.grading_system.brackets.map(b => {
+  const [min, max] = b.range.split('-').map(Number);
+  return { ...b, min, max };
+});
+
 export const STATIC_RESOURCES: AcademicResource[] = [
   { id: "static-cse-1", courseId: "0613-101", title: "CS50: Introduction to CS (Harvard)", source_name: "Harvard University", type: "web", direct_url: "https://pll.harvard.edu/course/cs50-introduction-computer-science", badge: "Best for Concepts", difficulty: "Advanced", quality_score: 100, status: "active", topic_context: "Computer Science Fundamentals", timestamp: 1715000000000 },
   { id: "static-cse-2", courseId: "0613-101", title: "FreeCodeCamp: C Full Course", source_name: "FreeCodeCamp", type: "video", direct_url: "https://www.youtube.com/watch?v=KJgs26ucDzg", badge: "Complete Tutorial", difficulty: "Beginner", quality_score: 98, status: "active", topic_context: "C Programming Crash Course", timestamp: 1715000000000 },

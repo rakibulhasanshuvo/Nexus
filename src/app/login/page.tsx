@@ -13,7 +13,7 @@ export default function LoginPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
-  // If already logged in, redirect to home
+  // If already logged in (or bypassed via mock), redirect to home
   React.useEffect(() => {
     if (!isLoading && user) {
       router.push('/');
@@ -43,8 +43,8 @@ export default function LoginPage() {
 
       if (error) throw error;
       setMessage('Check your email for the login link!');
-    } catch (error: any) {
-      setMessage(error.message || 'An error occurred during login');
+    } catch (error: unknown) {
+      setMessage(error instanceof Error ? error.message : 'An error occurred during login');
     } finally {
       setLoading(false);
     }
@@ -60,8 +60,8 @@ export default function LoginPage() {
           redirectTo: `${window.location.origin}/`,
         }
       });
-    } catch (error: any) {
-      setMessage(error.message || 'An error occurred during Google login');
+    } catch (error: unknown) {
+      setMessage(error instanceof Error ? error.message : 'An error occurred during Google login');
     }
   };
 

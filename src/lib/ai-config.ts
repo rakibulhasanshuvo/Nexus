@@ -1,8 +1,8 @@
 export const AI_MODELS = {
-  DEFAULT_OPS: 'gemini-3.1-flash-lite',
-  COMPLEX_LOGIC: 'gemini-3-flash',
-  VECTORIZATION: 'gemini-embedding-2',
-  BATCH_OPS: 'gemma-4-31b',
+  DEFAULT_OPS: 'gemini-2.5-flash',
+  COMPLEX_LOGIC: 'gemini-2.5-flash',
+  VECTORIZATION: 'text-embedding-004',
+  BATCH_OPS: 'gemini-2.5-flash',
 } as const;
 
 export type AIModelType = keyof typeof AI_MODELS;

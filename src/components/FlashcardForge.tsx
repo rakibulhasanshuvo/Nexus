@@ -49,9 +49,8 @@ const FlashcardForge: React.FC<FlashcardForgeProps> = ({ courseId, courseName, t
 
   const generateCards = async () => {
     setIsGenerating(true);
-    const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
     try {
-      const raw = await generateFlashcardsAction(courseName, courseId, topics, userApiKey);
+      const raw = await generateFlashcardsAction(courseName, courseId, topics);
       const newCards = raw.map((c: any) => ({
         id: crypto.randomUUID(),
         question: c.question,

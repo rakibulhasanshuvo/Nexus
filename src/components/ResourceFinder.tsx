@@ -86,11 +86,10 @@ const ResourceFinderInner: React.FC = () => {
   const handleGenerateCheatSheet = async (e: React.MouseEvent, moduleId: string, unitTitle: string, topics: string[]) => {
     e.stopPropagation();
     setLoadingActionId(`cheat-${moduleId}`);
-    const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
     try {
       const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
       // Using Secure Next.js Server Action
-      const result = await generateCheatSheetAction(courseName, unitTitle, topics, userApiKey);
+      const result = await generateCheatSheetAction(courseName, unitTitle, topics);
       setCheatSheets(prev => ({ ...prev, [moduleId]: result }));
       setExpandedModule(moduleId);
     } catch (err) {
@@ -104,11 +103,10 @@ const ResourceFinderInner: React.FC = () => {
     e.stopPropagation();
     const prompt = userContexts[moduleId] || "Analyze standard TMA questions for this topic";
     setLoadingActionId(`tma-${moduleId}`);
-    const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
     try {
       const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
       // Using Secure Next.js Server Action
-      const result = await generateTMAOutlineAction(courseName, unitTitle, prompt, userApiKey);
+      const result = await generateTMAOutlineAction(courseName, unitTitle, prompt);
       setTmaOutlines(prev => ({ ...prev, [moduleId]: result }));
       setExpandedModule(moduleId);
     } catch (err) {
@@ -121,12 +119,11 @@ const ResourceFinderInner: React.FC = () => {
   const handleGenerateTutorials = async (e: React.MouseEvent, moduleId: string, unitTitle: string, topics: string[]) => {
     e.stopPropagation();
     setLoadingActionId(`tutorial-${moduleId}`);
-    const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
     try {
       const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
       const pref = tutorialPref[moduleId] || "Best Bangla Tutorials";
       // Using Secure Next.js Server Action
-      const result = await findStructuredTutorialsAction(courseName, unitTitle, topics, pref, userApiKey);
+      const result = await findStructuredTutorialsAction(courseName, unitTitle, topics, pref);
       setTutorials(prev => ({ ...prev, [moduleId]: result }));
       setExpandedModule(moduleId);
     } catch (err) {

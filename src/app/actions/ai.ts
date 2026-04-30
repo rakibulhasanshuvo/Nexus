@@ -1,6 +1,6 @@
 "use server";
 import { AI_MODELS } from "@/lib/ai-config";
-
+import { cookies } from "next/headers";
 import { GoogleGenAI, Type, Schema, Modality } from "@google/genai";
 import { StructuredTutorial, ExamRoutineItem } from "@/lib/types";
 
@@ -24,8 +24,14 @@ async function withRetry<T>(operation: (ai: GoogleGenAI) => Promise<T>, userApiK
     process.env.GEMINI_API_KEY_3
   ].filter(Boolean) as string[];
 
-  if (userApiKey) {
-    const ai = new GoogleGenAI({ apiKey: userApiKey });
+  // Priority 1: User-provided key via HttpOnly cookie (Secure)
+  const cookieStore = await cookies();
+  const cookieKey = cookieStore.get("bou_user_api_key")?.value;
+
+  const finalApiKey = cookieKey || userApiKey;
+
+  if (finalApiKey) {
+    const ai = new GoogleGenAI({ apiKey: finalApiKey });
     return await operation(ai);
   }
 

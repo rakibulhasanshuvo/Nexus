@@ -56,8 +56,6 @@ const CourseWorkspace: React.FC<CourseWorkspaceProps> = ({ courseId }) => {
     setInput('');
     setIsLoading(true);
 
-    const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
-
     try {
       const chatHistory = messages.map(m => ({ role: m.role, text: m.text }));
       const response = await courseTutorChatAction(
@@ -65,8 +63,7 @@ const CourseWorkspace: React.FC<CourseWorkspaceProps> = ({ courseId }) => {
         course?.name || '',
         courseId,
         details?.overview || '',
-        chatHistory,
-        userApiKey
+        chatHistory
       );
       setMessages(prev => [...prev, { role: 'model', text: response }]);
     } catch (e) {

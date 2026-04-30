@@ -73,12 +73,10 @@ const ChatBot: React.FC = () => {
     setInput('');
     setIsLoading(true);
 
-    const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
-
     try {
       const context = `Student has ${stats.credits} credits done with a CGPA of ${stats.cgpa.toFixed(2)}. Target is ${stats.target}. Priority: ${mode.toUpperCase()} mode.`;
       const chatHistory = messages.map(m => ({ role: m.role, text: m.text }));
-      const response = await counselorChatAction(userMsg.text, mode, context, chatHistory, userApiKey);
+      const response = await counselorChatAction(userMsg.text, mode, context, chatHistory);
       const botMsg: ChatMessage = {
         role: 'model', 
         text: response.text, 

@@ -47,9 +47,8 @@ const SyllabusExplorer: React.FC = () => {
   const explain = async (courseName: string, topic: string, courseId: string) => {
     setIsExplaining(true);
     setExplanation(null);
-    const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
     try {
-      const text = await explainTopicAction(courseName, topic, userApiKey);
+      const text = await explainTopicAction(courseName, topic);
       setExplanation({ courseId, topic, text });
     } catch (e: unknown) {
       setExplanation({ courseId, topic, text: `⚠️ ${e instanceof Error ? e.message : String(e)}` });
@@ -61,9 +60,8 @@ const SyllabusExplorer: React.FC = () => {
   const startQuiz = async (courseName: string, topic: string) => {
     setIsQuizzing(true);
     setQuiz(null);
-    const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
     try {
-      const result = await generateQuizAction(courseName, topic, userApiKey);
+      const result = await generateQuizAction(courseName, topic);
       if (result) setQuiz(result);
     } catch (e: unknown) {
       console.error(e);

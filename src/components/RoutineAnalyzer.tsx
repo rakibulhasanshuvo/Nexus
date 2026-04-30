@@ -24,13 +24,11 @@ const RoutineAnalyzer: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
-    const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
-
     try {
       const reader = new FileReader();
       reader.onload = async () => {
         const base64 = (reader.result as string).split(',')[1];
-        const items = await extractRoutineAction(base64, file.type, userApiKey);
+        const items = await extractRoutineAction(base64, file.type);
         if (items.length === 0) {
           setError('No exam schedule found in the image. Please try a different image.');
         } else {

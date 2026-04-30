@@ -1,34 +1,37 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Key, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Key, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { setApiKeyAction, removeApiKeyAction, getHasApiKeyAction } from '@/app/actions/apiKey';
 
 export const APIKeyManager: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
+  const [hasKey, setHasKey] = useState(false);
 
   useEffect(() => {
-    // Only access localStorage on client-side
-    if (typeof window !== 'undefined') {
-      const storedKey = localStorage.getItem('bou_user_api_key');
-      if (storedKey) {
-        queueMicrotask(() => setApiKey(storedKey));
-      }
-    }
+    const checkKey = async () => {
+      const exists = await getHasApiKeyAction();
+      setHasKey(exists);
+    };
+    checkKey();
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
       if (apiKey.trim()) {
-        localStorage.setItem('bou_user_api_key', apiKey.trim());
+        await setApiKeyAction(apiKey.trim());
+        setHasKey(true);
       } else {
-        localStorage.removeItem('bou_user_api_key');
+        await removeApiKeyAction();
+        setHasKey(false);
       }
       setSaveStatus('saved');
       setIsEditing(false);
+      setApiKey(''); // Clear for security
       setTimeout(() => setSaveStatus('idle'), 3000);
     } catch (e) {
       console.error('Failed to save API key:', e);
@@ -47,7 +50,7 @@ export const APIKeyManager: React.FC = () => {
             <Key className="w-4 h-4 opacity-60" />
             <span>BYO API Key</span>
           </div>
-          {apiKey ? (
+          {hasKey ? (
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[var(--success-subtle)] border border-[var(--success)]/20">
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)] shadow-[var(--success-glow)]" />
               <span className="text-[9px] font-bold text-[var(--success)] uppercase tracking-widest">Active</span>

@@ -62,10 +62,6 @@ export function useSyncedData<T>(
                setStoredValue(rowData[dataColumn] as T);
                // Keep localstorage in sync
                window.localStorage.setItem(key, JSON.stringify(rowData[dataColumn]));
-            } else if (rowData && !dataColumn && isMounted) {
-               // If there's no nested data column, and we just use the row itself
-               // But usually we just want the JSON blob.
-               // We will assume dataColumn is passed for JSON blobs.
             }
           }
         } catch (error) {

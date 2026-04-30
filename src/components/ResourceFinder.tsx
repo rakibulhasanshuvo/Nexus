@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { generateCheatSheetAction, generateTMAOutlineAction, findStructuredTutorialsAction } from '@/app/actions/ai';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { COURSE_MAPPING, COURSE_DETAILS } from '@/lib/constants';
 import { StructuredTutorial } from '@/lib/types';
 import { Library, Search, Loader2, BookOpen, Flame, PenTool, CheckCircle, ChevronDown, ChevronUp, Bot, ArrowRight, BookA, PlayCircle, Video, FileText } from 'lucide-react';
@@ -59,15 +60,31 @@ const ResourceFinderInner: React.FC = () => {
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
   const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
   
-  // Data States (Cache for AI responses)
-  const [cheatSheets, setCheatSheets] = useState<Record<string, string>>({});
-  const [tmaOutlines, setTmaOutlines] = useState<Record<string, string>>({});
-  const [userContexts, setUserContexts] = useState<Record<string, string>>({});
-  const [tutorials, setTutorials] = useState<Record<string, StructuredTutorial[]>>({});
-  const [tutorialPref, setTutorialPref] = useState<Record<string, string>>({});
+  // Data States (Persistent Cache for AI responses)
+  const [cheatSheets, setCheatSheets] = useLocalStorage<Record<string, string>>('bou_resource_cheatsheets', {});
+  const [tmaOutlines, setTmaOutlines] = useLocalStorage<Record<string, string>>('bou_resource_tma_outlines', {});
+  const [userContexts, setUserContexts] = useLocalStorage<Record<string, string>>('bou_resource_user_contexts', {});
+  const [tutorials, setTutorials] = useLocalStorage<Record<string, StructuredTutorial[]>>('bou_resource_tutorials', {});
+  const [tutorialPref, setTutorialPref] = useLocalStorage<Record<string, string>>('bou_resource_tutorial_prefs', {});
 
   const handleContextChange = (moduleId: string, value: string) => {
     setUserContexts(prev => ({ ...prev, [moduleId]: value }));
+  };
+
+  const clearModuleCache = (type: 'cheat' | 'tma' | 'tutorial', moduleId: string) => {
+    if (type === 'cheat') {
+      const next = { ...cheatSheets };
+      delete next[moduleId];
+      setCheatSheets(next);
+    } else if (type === 'tma') {
+      const next = { ...tmaOutlines };
+      delete next[moduleId];
+      setTmaOutlines(next);
+    } else if (type === 'tutorial') {
+      const next = { ...tutorials };
+      delete next[moduleId];
+      setTutorials(next);
+    }
   };
 
   const semester = COURSE_MAPPING[selectedSemester];
@@ -85,6 +102,7 @@ const ResourceFinderInner: React.FC = () => {
 
   const handleGenerateCheatSheet = async (e: React.MouseEvent, moduleId: string, unitTitle: string, topics: string[]) => {
     e.stopPropagation();
+    if (cheatSheets[moduleId]) return;
     setLoadingActionId(`cheat-${moduleId}`);
     const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
     try {
@@ -102,6 +120,7 @@ const ResourceFinderInner: React.FC = () => {
 
   const handleGenerateTMAOutline = async (e: React.MouseEvent, moduleId: string, unitTitle: string) => {
     e.stopPropagation();
+    if (tmaOutlines[moduleId]) return;
     const prompt = userContexts[moduleId] || "Analyze standard TMA questions for this topic";
     setLoadingActionId(`tma-${moduleId}`);
     const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
@@ -118,8 +137,9 @@ const ResourceFinderInner: React.FC = () => {
     }
   };
 
-  const handleGenerateTutorials = async (e: React.MouseEvent, moduleId: string, unitTitle: string, topics: string[]) => {
+  const handleGenerateTutorials = async (e: React.MouseEvent, moduleId: string, unitTitle: string, topics: string[], force = false) => {
     e.stopPropagation();
+    if (tutorials[moduleId] && !force) return;
     setLoadingActionId(`tutorial-${moduleId}`);
     const userApiKey = localStorage.getItem('bou_user_api_key') || undefined;
     try {
@@ -256,7 +276,18 @@ const ResourceFinderInner: React.FC = () => {
                               <Bot className="w-5 h-5 text-[var(--accent)]" />
                               <h4 className="font-black text-[11px] text-[var(--text-primary)] uppercase tracking-[0.2em]">1-Page Cheat Sheet</h4>
                             </div>
-                            {cheatSheets[module.id] && <CheckCircle className="w-4 h-4 text-[var(--success)]" />}
+                            {cheatSheets[module.id] && (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); clearModuleCache('cheat', module.id); }}
+                                  className="p-1 hover:bg-[var(--bg-tertiary)] rounded-md transition-colors group/refresh"
+                                  title="Regenerate"
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5 text-[var(--text-tertiary)] group-hover/refresh:text-[var(--accent)]" />
+                                </button>
+                                <CheckCircle className="w-4 h-4 text-[var(--success)]" />
+                              </div>
+                            )}
                           </div>
                           <p className="text-[11px] font-bold text-[var(--text-tertiary)] leading-relaxed z-10">
                             Distill this BOU unit into a high-octane summary. Extracts core concepts, formulas, code snippets, and top exam tips.
@@ -289,7 +320,18 @@ const ResourceFinderInner: React.FC = () => {
                               <PenTool className="w-5 h-5 text-[var(--accent)]" />
                               <h4 className="text-[12px] font-black uppercase tracking-widest text-[var(--text-primary)]">TMA Expert</h4>
                             </div>
-                            {tmaOutlines[module.id] && <CheckCircle className="w-4 h-4 text-[var(--success)]" />}
+                            {tmaOutlines[module.id] && (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); clearModuleCache('tma', module.id); }}
+                                  className="p-1 hover:bg-[var(--bg-tertiary)] rounded-md transition-colors group/refresh"
+                                  title="Regenerate"
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5 text-[var(--text-tertiary)] group-hover/refresh:text-[var(--accent)]" />
+                                </button>
+                                <CheckCircle className="w-4 h-4 text-[var(--success)]" />
+                              </div>
+                            )}
                           </div>
                           <p className="text-[11px] font-bold text-[var(--text-tertiary)] leading-relaxed z-10">
                             Paste a specific assignment question below. The AI will generate a strict structural outline ensuring you hit BOU marking criteria without plagiarizing.
@@ -330,7 +372,18 @@ const ResourceFinderInner: React.FC = () => {
                               <PlayCircle className="w-5 h-5 text-[var(--danger)]" />
                               <h4 className="font-black text-[11px] text-[var(--text-primary)] uppercase tracking-[0.2em]">Curated Resources</h4>
                             </div>
-                            {tutorials[module.id] && <CheckCircle className="w-4 h-4 text-[var(--success)]" />}
+                            {tutorials[module.id] && (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); clearModuleCache('tutorial', module.id); }}
+                                  className="p-1 hover:bg-[var(--bg-tertiary)] rounded-md transition-colors group/refresh"
+                                  title="Clear & Refresh"
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5 text-[var(--text-tertiary)] group-hover/refresh:text-[var(--danger)]" />
+                                </button>
+                                <CheckCircle className="w-4 h-4 text-[var(--success)]" />
+                              </div>
+                            )}
                           </div>
                           <p className="text-[11px] font-bold text-[var(--text-tertiary)] leading-relaxed z-10">
                             Discover the highest-rated videos and articles customized for this complex unit.
@@ -387,7 +440,7 @@ const ResourceFinderInner: React.FC = () => {
                               ))}
                               <button
                                 aria-label="Find Video Lectures"
-                                onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics)}
+                                onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics, true)}
                                 disabled={loadingActionId !== null}
                                 className="mt-2 h-10 w-full rounded-xl border-2 border-dashed border-[var(--border-subtle)] text-[var(--text-tertiary)] text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 shrink-0"
                               >

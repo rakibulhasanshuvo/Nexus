@@ -6,7 +6,7 @@ import { generateCheatSheetAction, generateTMAOutlineAction, findStructuredTutor
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { COURSE_MAPPING, COURSE_DETAILS } from '@/lib/constants';
 import { StructuredTutorial } from '@/lib/types';
-import { Library, Search, Loader2, BookOpen, Flame, PenTool, CheckCircle, ChevronDown, ChevronUp, Bot, ArrowRight, BookA, PlayCircle, Video, FileText } from 'lucide-react';
+import { Library, Search, Loader2, BookOpen, RotateCcw, Flame, PenTool, CheckCircle, ChevronDown, ChevronUp, Bot, ArrowRight, BookA, PlayCircle, Video, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 
@@ -141,7 +141,7 @@ const ResourceFinderInner: React.FC = () => {
     setLoadingActionId(`tutorial-${moduleId}`);
     try {
       const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
-      const pref = tutorialPref[moduleId] || "Best Bangla Tutorials";
+      const pref = tutorialPref[moduleId] || "Best Bangla Tutorials from any platform";
       // Using Secure Next.js Server Action
       const result = await findStructuredTutorialsAction(courseName, unitTitle, topics, pref);
       setTutorials(prev => ({ ...prev, [moduleId]: result }));
@@ -387,14 +387,15 @@ const ResourceFinderInner: React.FC = () => {
                           </p>
                           
                           <select 
-                            value={tutorialPref[module.id] || "Best Bangla Tutorials"}
+                            value={tutorialPref[module.id] || "Best Bangla Tutorials from any platform"}
                             onChange={(e) => setTutorialPref(prev => ({ ...prev, [module.id]: e.target.value }))}
                             onClick={(e) => e.stopPropagation()}
                             className="h-10 px-3 rounded-xl text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)] bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] focus:outline-none focus:border-[var(--danger)]/30 focus:ring-2 focus:ring-[var(--danger)]/10 z-10 appearance-none cursor-pointer"
                           >
-                            <option value="Best Bangla Tutorials">🇧🇩 YouTube (Bangla)</option>
-                            <option value="Best English Tutorials with animations">🇬🇧 YouTube (English)</option>
+                            <option value="Best Bangla Tutorials from any platform">🇧🇩 Bangla Tutorials (Any Platform)</option>
+                            <option value="Best English Tutorials with animations from any platform">🇬🇧 English Tutorials (Any Platform)</option>
                             <option value="High quality written articles (GeeksforGeeks, etc)">📝 Written Articles</option>
+                            <option value="University courses (MIT OCW, NPTEL, Coursera)">🎓 University Courses</option>
                           </select>
 
                           {loadingActionId === `tutorial-${module.id}` ? (
@@ -404,9 +405,9 @@ const ResourceFinderInner: React.FC = () => {
                               {tutorials[module.id].map((tut, i) => (
                                 <a 
                                   key={i}
-                                  href={tut.type === 'video' 
+                                  href={tut.url || (tut.type === 'video'
                                     ? `https://www.youtube.com/results?search_query=${encodeURIComponent(tut.searchQuery)}`
-                                    : `https://www.google.com/search?q=${encodeURIComponent(tut.searchQuery)}`
+                                    : `https://www.google.com/search?q=${encodeURIComponent(tut.searchQuery)}`)
                                   }
                                   target="_blank"
                                   rel="noreferrer"

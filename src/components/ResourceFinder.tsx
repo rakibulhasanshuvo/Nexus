@@ -303,7 +303,7 @@ const ResourceFinderInner: React.FC = () => {
 
             {/* Active Tool Content */}
             <div className="flex-1 p-6 md:p-10 lg:p-12 overflow-y-auto">
-              <div className="max-w-[800px] mx-auto">
+              <div className="max-w-full mx-auto">
                  {/* This is where the tool content goes. I'll replace it with a marker for now to inject the rest of the code. */}
 
                 {activeTool === 'tma' && modules.filter(m => m.id === selectedModuleId).map(module => (

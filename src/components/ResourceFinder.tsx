@@ -53,9 +53,18 @@ const ResourceFinderInner: React.FC = () => {
   const handleCourseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedCourse(val);
-    setSelectedModuleId(null);
-    setActiveTool(null);
     updateUrlParams('course', val);
+
+    // Auto-select first module if available
+    const detail = COURSE_DETAILS[val];
+    if (detail && detail.topics.length > 0) {
+      const firstId = `${val}-unit-1`;
+      setSelectedModuleId(firstId);
+      setActiveTool('tma');
+    } else {
+      setSelectedModuleId(null);
+      setActiveTool(null);
+    }
   };
 
   // UI States
@@ -159,393 +168,383 @@ const ResourceFinderInner: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in w-full flex flex-col min-h-screen pb-20">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-[var(--text-primary)] uppercase">Syllabus Vault<br/>& PYQ Analyzer</h1>
-          <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-tertiary)] mt-2">BOU Official Curriculum</h2>
-          <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mt-2 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse" />
-            AI & Server-Actions Secured
-          </p>
-        </div>
-      </div>
 
-      {/* Control Strip */}
-      <div className="apple-card bg-[var(--bg-secondary)]/80 backdrop-blur-xl border-[var(--border-subtle)] p-2 shadow-xl">
-        <div className="flex flex-col md:flex-row gap-2">
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div className="relative group">
-              <select 
-                value={selectedSemester} 
-                onChange={handleSemesterChange} 
-                className="apple-select w-full !pl-12 h-14 font-black uppercase tracking-widest text-[11px] appearance-none cursor-pointer hover:bg-[var(--bg-tertiary)] bg-[var(--bg-secondary)] border-[var(--border-subtle)] text-[var(--text-primary)] transition-colors"
-                aria-label="Select Semester"
-              >
-                {COURSE_MAPPING.map((_, idx) => (<option key={idx} value={idx}>Term S0{idx + 1}</option>))}
-              </select>
-              <Library className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors" />
-            </div>
-            <div className="relative group">
-              <select 
-                value={selectedCourse} 
-                onChange={handleCourseChange} 
-                className="apple-select w-full !pl-12 h-14 font-black uppercase tracking-widest text-[11px] appearance-none cursor-pointer hover:bg-[var(--bg-tertiary)] bg-[var(--bg-secondary)] border-[var(--border-subtle)] text-[var(--text-primary)] transition-colors"
-                aria-label="Select Course"
-              >
-                <option value="">Select Target Course</option>
-                {semester.courses.filter(c => c.type === 'theory').map(c => (<option key={c.id} value={c.id}>{c.name}</option>))}
-              </select>
-              <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors" />
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="animate-fade-in w-full flex flex-col lg:flex-row h-[calc(100vh-80px)] overflow-hidden gap-0 bg-[var(--bg-primary)]">
+      {/* Left Column (Sidebar) */}
+      <aside className="w-full lg:w-[320px] lg:min-w-[320px] bg-[var(--bg-secondary)]/50 border-r border-[var(--border-subtle)] flex flex-col h-full overflow-y-auto z-10">
+        <div className="p-6 border-b border-[var(--border-subtle)]">
+          <h2 className="text-xl font-bold tracking-tight text-[var(--text-primary)] mb-6">Assignment Context</h2>
 
-
-      {/* Action Bar (Sticky) */}
-      {selectedCourse && courseDetail && modules.length > 0 && (
-        <div className="sticky top-20 z-50 apple-card bg-[var(--bg-secondary)]/90 backdrop-blur-xl border-[var(--border-subtle)] p-4 shadow-xl mb-6">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            <div className="relative group w-full md:w-1/3">
-              <select
-                value={selectedModuleId || ""}
-                onChange={(e) => {
-                  setSelectedModuleId(e.target.value || null);
-                  setActiveTool(null);
-                }}
-                className="apple-select w-full !pl-12 h-14 font-black uppercase tracking-widest text-[11px] appearance-none cursor-pointer hover:bg-[var(--bg-tertiary)] bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-[var(--text-primary)] transition-colors"
-                aria-label="Target Unit"
-              >
-                <option value="">Select Target Unit</option>
-                {modules.map(m => (
-                  <option key={m.id} value={m.id}>Unit {m.unit}: {m.title}</option>
-                ))}
-              </select>
-              <CheckCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors" />
-            </div>
-
-            <div className="flex-1 flex flex-wrap gap-2 justify-center md:justify-end w-full">
-              <button
-                onClick={() => setActiveTool(activeTool === 'cheat' ? null : 'cheat')}
-                disabled={!selectedModuleId}
-                className={`flex-1 md:flex-none h-14 px-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
-                  activeTool === 'cheat'
-                    ? 'bg-[var(--accent)] text-[var(--bg-primary)] shadow-md'
-                    : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] border border-[var(--border-subtle)]'
-                } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
-              >
-                <Flame className="w-4 h-4" /> Cheat Sheet
-              </button>
-              <button
-                onClick={() => setActiveTool(activeTool === 'tma' ? null : 'tma')}
-                disabled={!selectedModuleId}
-                className={`flex-1 md:flex-none h-14 px-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
-                  activeTool === 'tma'
-                    ? 'bg-[var(--accent)] text-[var(--bg-primary)] shadow-md'
-                    : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] border border-[var(--border-subtle)]'
-                } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
-              >
-                <PenTool className="w-4 h-4" /> TMA Expert
-              </button>
-              <button
-                onClick={() => setActiveTool(activeTool === 'tutorial' ? null : 'tutorial')}
-                disabled={!selectedModuleId}
-                className={`flex-1 md:flex-none h-14 px-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
-                  activeTool === 'tutorial'
-                    ? 'bg-[var(--danger)] text-[var(--bg-primary)] shadow-md'
-                    : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] border border-[var(--border-subtle)]'
-                } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
-              >
-                <PlayCircle className="w-4 h-4" /> Tutorials
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-
-      {/* Dynamic Workspace */}
-      <AnimatePresence>
-        {selectedModuleId && activeTool && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -20, height: 0 }}
-            className="mb-8"
-          >
-            {modules.filter(m => m.id === selectedModuleId).map(module => (
-              <div key={module.id} className="apple-card bg-[var(--bg-secondary)] border border-[var(--border-subtle)] shadow-[var(--card-shadow-elevated)] p-6 overflow-hidden relative">
-
-                {/* Close Button */}
-                <button
-                  onClick={() => setActiveTool(null)}
-                  className="absolute top-4 right-4 p-2 bg-[var(--bg-tertiary)] hover:bg-[var(--danger)]/10 text-[var(--text-tertiary)] hover:text-[var(--danger)] rounded-full transition-colors z-20"
+          <div className="space-y-4">
+            {/* Term Selector */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-2">Academic Term</label>
+              <div className="relative group">
+                <select
+                  value={selectedSemester}
+                  onChange={handleSemesterChange}
+                  className="apple-select w-full h-12 font-black uppercase tracking-widest text-[11px] appearance-none cursor-pointer hover:bg-[var(--bg-tertiary)] bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-[var(--text-primary)] transition-colors"
                 >
-                  <RotateCcw className="w-4 h-4 rotate-45" /> {/* Just using an X icon would be better but reusing existing import */}
-                </button>
-
-                {/* Cheat Sheet View */}
-                {activeTool === 'cheat' && (
-                  <div className="flex flex-col gap-6">
-                    <div className="flex items-center justify-between z-10 pr-10">
-                      <div className="flex items-center gap-2">
-                        <Flame className="w-5 h-5 text-[var(--accent)]" />
-                        <h4 className="font-black text-[13px] text-[var(--text-primary)] uppercase tracking-[0.2em]">1-Page Cheat Sheet</h4>
-                      </div>
-                      {cheatSheets[module.id] && (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => clearModuleCache('cheat', module.id)}
-                            className="p-1.5 hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
-                            title="Clear & Refresh"
-                          >
-                            <RotateCcw className="w-4 h-4 text-[var(--text-tertiary)] hover:text-[var(--accent)]" />
-                          </button>
-                          <CheckCircle className="w-5 h-5 text-[var(--success)]" />
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-[12px] font-bold text-[var(--text-tertiary)] leading-relaxed">
-                      Distill this BOU unit into a high-octane summary. Extracts core concepts, formulas, code snippets, and top exam tips.
-                    </p>
-
-                    {loadingActionId === `cheat-${module.id}` ? (
-                      <SkeletonLoader />
-                    ) : cheatSheets[module.id] ? (
-                      <div className="mt-2 text-[14px] font-medium p-6 bg-[var(--bg-tertiary)]/50 rounded-xl border border-[var(--border-subtle)] max-h-[600px] overflow-y-auto style-markdown text-[var(--text-primary)]">
-                         <ReactMarkdown>{cheatSheets[module.id]}</ReactMarkdown>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={(e) => handleGenerateCheatSheet(e, module.id, module.title, module.topics)}
-                        disabled={loadingActionId !== null}
-                        className="h-14 rounded-xl bg-[var(--accent)] text-[var(--bg-primary)] text-[12px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50"
-                      >
-                        <Flame className="w-5 h-5" /> Generate Exam Summary
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* TMA Expert View */}
-                {activeTool === 'tma' && (
-                  <div className="flex flex-col gap-6">
-                    <div className="flex items-center justify-between z-10 pr-10">
-                      <div className="flex items-center gap-2">
-                        <PenTool className="w-5 h-5 text-[var(--accent)]" />
-                        <h4 className="font-black text-[13px] text-[var(--text-primary)] uppercase tracking-[0.2em]">TMA Expert</h4>
-                      </div>
-                      {tmaOutlines[module.id] && (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => clearModuleCache('tma', module.id)}
-                            className="p-1.5 hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
-                            title="Clear & Refresh"
-                          >
-                            <RotateCcw className="w-4 h-4 text-[var(--text-tertiary)] hover:text-[var(--accent)]" />
-                          </button>
-                          <CheckCircle className="w-5 h-5 text-[var(--success)]" />
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-[12px] font-bold text-[var(--text-tertiary)] leading-relaxed">
-                      Paste a specific assignment question below. The AI will generate a strict structural outline ensuring you hit BOU marking criteria.
-                    </p>
-
-                    <input
-                      type="text"
-                      placeholder="e.g., 'Describe the differences between...'"
-                      value={userContexts[module.id] || ''}
-                      onChange={(e) => handleContextChange(module.id, e.target.value)}
-                      className="h-14 px-4 rounded-xl text-[13px] font-medium bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border-subtle)] focus:outline-none focus:border-[var(--accent)] transition-all"
-                    />
-
-                    {loadingActionId === `tma-${module.id}` ? (
-                      <SkeletonLoader />
-                    ) : tmaOutlines[module.id] ? (
-                      <div className="mt-2 text-[14px] font-medium p-6 bg-[var(--accent-subtle)] rounded-xl border border-[var(--accent)]/20 max-h-[600px] overflow-y-auto style-markdown text-[var(--text-primary)]">
-                         <ReactMarkdown>{tmaOutlines[module.id]}</ReactMarkdown>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={(e) => handleGenerateTMAOutline(e, module.id, module.title)}
-                        disabled={loadingActionId !== null}
-                        className="h-14 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[12px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50"
-                      >
-                        <ArrowRight className="w-5 h-5" /> Architect TMA Answer
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* Tutorial View */}
-                {activeTool === 'tutorial' && (
-                  <div className="flex flex-col gap-6">
-                    <div className="flex items-center justify-between z-10 pr-10">
-                      <div className="flex items-center gap-2">
-                        <PlayCircle className="w-5 h-5 text-[var(--danger)]" />
-                        <h4 className="font-black text-[13px] text-[var(--text-primary)] uppercase tracking-[0.2em]">Curated Resources</h4>
-                      </div>
-                      {tutorials[module.id] && (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => clearModuleCache('tutorial', module.id)}
-                            className="p-1.5 hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
-                            title="Clear & Refresh"
-                          >
-                            <RotateCcw className="w-4 h-4 text-[var(--text-tertiary)] hover:text-[var(--danger)]" />
-                          </button>
-                          <CheckCircle className="w-5 h-5 text-[var(--success)]" />
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-[12px] font-bold text-[var(--text-tertiary)] leading-relaxed">
-                      Discover the highest-rated videos and articles customized for this complex unit.
-                    </p>
-
-                    <select
-                      value={tutorialPref[module.id] || "Best Bangla Tutorials from any platform"}
-                      onChange={(e) => setTutorialPref(prev => ({ ...prev, [module.id]: e.target.value }))}
-                      className="h-14 px-4 rounded-xl text-[12px] font-bold uppercase tracking-widest text-[var(--text-secondary)] bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] focus:outline-none focus:border-[var(--danger)]/30 appearance-none cursor-pointer"
-                    >
-                      <option value="Best Bangla Tutorials from any platform">🇧🇩 Bangla Tutorials (Any Platform)</option>
-                      <option value="Best English Tutorials with animations from any platform">🇬🇧 English Tutorials (Any Platform)</option>
-                      <option value="High quality written articles (GeeksforGeeks, etc)">📝 Written Articles</option>
-                      <option value="University courses (MIT OCW, NPTEL, Coursera)">🎓 University Courses</option>
-                    </select>
-
-                    {loadingActionId === `tutorial-${module.id}` ? (
-                      <SkeletonLoader />
-                    ) : tutorials[module.id] ? (
-                      <div className="mt-2 flex flex-col gap-4 max-h-[600px] overflow-y-auto pr-2">
-                        {tutorials[module.id].map((tut, i) => (
-                          <a
-                            key={i}
-                            href={tut.url || (tut.type === 'video'
-                              ? `https://www.youtube.com/results?search_query=${encodeURIComponent(tut.searchQuery)}`
-                              : `https://www.google.com/search?q=${encodeURIComponent(tut.searchQuery)}`)
-                            }
-                            target="_blank"
-                            rel="noreferrer"
-                            className="block p-5 rounded-xl border border-[var(--border-subtle)] hover:border-[var(--danger)]/30 hover:shadow-lg bg-[var(--bg-secondary)] transition-all group/card"
-                          >
-                            <div className="flex items-start gap-4">
-                              <div className="mt-1">
-                                {tut.type === 'video' ? <Video className="w-5 h-5 text-[var(--danger)]" /> : <FileText className="w-5 h-5 text-[var(--accent)]" />}
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
-                                    {tut.provider}
-                                  </span>
-                                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-tertiary)]">
-                                    {tut.language}
-                                  </span>
-                                </div>
-                                <h5 className="text-[15px] font-black leading-tight mb-2 text-[var(--text-primary)] group-hover/card:text-[var(--danger)] transition-colors">
-                                  {tut.title}
-                                </h5>
-                                <p className="text-[12px] font-bold text-[var(--text-tertiary)] leading-snug line-clamp-2">
-                                  {tut.reason}
-                                </p>
-                              </div>
-                            </div>
-                          </a>
-                        ))}
-                        <button
-                          onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics, true)}
-                          disabled={loadingActionId !== null}
-                          className="mt-2 h-12 w-full rounded-xl border-2 border-dashed border-[var(--border-subtle)] text-[var(--text-tertiary)] text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
-                        >
-                          <Search className="w-4 h-4" /> Find More
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics)}
-                        disabled={loadingActionId !== null}
-                        className="h-14 rounded-xl bg-[var(--danger)] text-[var(--bg-primary)] text-[12px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-colors disabled:opacity-50"
-                      >
-                        <PlayCircle className="w-5 h-5" /> Find Best Resources
-                      </button>
-                    )}
-                  </div>
-                )}
-
+                  {COURSE_MAPPING.map((s, idx) => (
+                    <option key={idx} value={idx}>{s.semester}</option>
+                  ))}
+                </select>
+                <BookOpen className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors pointer-events-none" />
               </div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
 
-      {/* Dynamic Content Area */}
-
-
-      {!selectedCourse ? (
-        <div className="flex-1 apple-card bg-[var(--bg-tertiary)]/50 border-dashed border-2 border-[var(--border-subtle)] flex flex-col items-center justify-center p-12 lg:p-20 relative overflow-hidden group">
-          <BookA className="absolute w-[800px] h-[800px] text-[var(--text-primary)]/[0.02] -bottom-40 -right-20 pointer-events-none group-hover:scale-[1.05] transition-transform duration-1000 ease-out" />
-          <div className="w-24 h-24 rounded-[32px] bg-[var(--bg-secondary)] shadow-2xl flex items-center justify-center mb-10 border border-[var(--border-subtle)] z-10">
-            <Search className="w-10 h-10 text-[var(--text-tertiary)]/30" />
+            {/* Subject Selector */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-2">Subject</label>
+              <div className="relative group">
+                <select
+                  value={selectedCourse}
+                  onChange={handleCourseChange}
+                  className="apple-select w-full h-12 font-black uppercase tracking-widest text-[11px] appearance-none cursor-pointer hover:bg-[var(--bg-tertiary)] bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-[var(--text-primary)] transition-colors disabled:opacity-50"
+                  disabled={!semester}
+                >
+                  <option value="">Select Target Course</option>
+                  {semester && semester.courses.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                <Library className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors pointer-events-none" />
+              </div>
+            </div>
           </div>
-          <h3 className="text-[18px] lg:text-[24px] font-black text-[var(--text-primary)] uppercase tracking-[0.3em] mb-4 text-center z-10 leading-tight">
-            Select Course to <br/> Unlock Syllabus Vault
-          </h3>
-          <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest max-w-md text-center leading-relaxed z-10">
-            Load a course to view official BOU modules, high-yield PYQ exam tags, and instantly generate assignment outlines or study cheat sheets.
-          </p>
         </div>
-      ) : !courseDetail ? (
-        <div className="flex-1 apple-card bg-[var(--bg-tertiary)]/50 border-dashed border-2 border-[var(--warning)]/50 flex flex-col items-center justify-center p-12 lg:p-20 relative">
-           <h3 className="text-[18px] font-black text-[var(--text-primary)] uppercase tracking-[0.3em] mb-4 text-center">Module Data Pending</h3>
-           <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest max-w-md text-center">We are still digitizing the syllabus map for this specific course. Please check Phase 1 courses (e.g. Structured Programming or Physics).</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <AnimatePresence>
-            {modules.map((module) => (
-              <motion.div 
-                layout 
-                key={module.id} 
-                className={`apple-card overflow-hidden transition-all duration-300 ${selectedModuleId === module.id ? 'border-[var(--text-primary)]/20 shadow-[var(--card-shadow-elevated)] scale-[1.01] z-20 relative bg-[var(--bg-secondary)]' : 'border-[var(--border-subtle)]/50 hover:border-[var(--border-subtle)] bg-[var(--bg-secondary)]'}`}
-              >
-                {/* Index Header */}
-                <div 
-                  className="p-5 cursor-pointer flex items-center justify-between bg-[var(--bg-secondary)] group"
+
+        {/* Sidebar Modules List */}
+        <div className="flex-1 p-4 overflow-y-auto space-y-2">
+          {selectedCourse && courseDetail ? (
+            <>
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-4 flex items-center gap-2 px-2">
+                <Library className="w-4 h-4" /> Related Units
+              </h3>
+              {modules.map((module) => (
+                <div
+                  key={module.id}
                   onClick={() => {
                      setSelectedModuleId(module.id);
-                     if (!activeTool) setActiveTool('cheat'); // default to cheat sheet to show something
-                     window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll back to action bar
+                     if (!activeTool) setActiveTool('tma');
                   }}
+                  className={`p-3 rounded-xl border cursor-pointer transition-all group flex items-start gap-3 ${selectedModuleId === module.id ? 'bg-[var(--bg-tertiary)] border-[var(--text-primary)]/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-[var(--bg-tertiary)]/50 hover:border-[var(--border-subtle)]'}`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-[14px] shadow-sm ${module.isHighYield ? 'bg-[var(--danger)]/5 text-[var(--danger)] border border-[var(--danger)]/10' : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border border-[var(--border-subtle)]'}`}>
-                      U{module.unit}
+                  <div className="mt-0.5">
+                    {selectedModuleId === module.id ? (
+                      <CheckCircle className="w-4 h-4 text-[var(--accent)]" />
+                    ) : (
+                      <div className="w-4 h-4 rounded-full border-2 border-[var(--border-subtle)] group-hover:border-[var(--text-tertiary)]" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className={`font-bold text-[13px] leading-tight transition-colors ${selectedModuleId === module.id ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>
+                      Unit {module.unit}: {module.title}
+                    </p>
+                    <p className="text-[10px] font-medium text-[var(--text-tertiary)] mt-1 flex items-center gap-2">
+                       {module.isHighYield && <span className="text-[var(--danger)] flex items-center gap-0.5"><Flame className="w-3 h-3" /> High-Yield</span>}
+                       Target Unit
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <div className="p-4 text-center">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mt-4">Select a course to view units</p>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* Right Column (Main Workspace) */}
+      <section className="flex-1 flex flex-col h-full bg-[var(--bg-primary)] overflow-hidden relative">
+        {/* Background ambient glow */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[var(--accent)]/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+        {(!selectedCourse || !courseDetail || !selectedModuleId) ? (
+          /* Empty State */
+          <div className="flex-1 p-8 flex flex-col items-center justify-center relative overflow-hidden group">
+            <BookA className="absolute w-[600px] h-[600px] text-[var(--text-primary)]/[0.02] -bottom-40 -right-20 pointer-events-none group-hover:scale-[1.05] transition-transform duration-1000 ease-out" />
+            <div className="w-24 h-24 rounded-[32px] bg-[var(--bg-secondary)] shadow-2xl flex items-center justify-center mb-10 border border-[var(--border-subtle)] z-10">
+              <Search className="w-10 h-10 text-[var(--text-tertiary)]/30" />
+            </div>
+            <h3 className="text-[18px] lg:text-[24px] font-black text-[var(--text-primary)] uppercase tracking-[0.3em] mb-4 text-center z-10 leading-tight">
+              Select Course to <br/> Unlock Syllabus Vault
+            </h3>
+            <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest max-w-md text-center leading-relaxed z-10">
+              Load a course to view official BOU modules, high-yield PYQ exam tags, and instantly generate assignment outlines or study cheat sheets.
+            </p>
+          </div>
+        ) : (
+          /* Workspace Content */
+          <div className="flex-1 overflow-y-auto flex flex-col">
+            {/* Tool Tabs Navbar */}
+            <div className="sticky top-0 z-30 bg-[var(--bg-primary)]/80 backdrop-blur-xl border-b border-[var(--border-subtle)] px-8 py-4 flex items-center justify-center sm:justify-start gap-4 sm:gap-8">
+              <button
+                onClick={() => setActiveTool('tma')}
+                className={`font-bold text-[12px] uppercase tracking-widest pb-1 transition-all ${activeTool === 'tma' ? 'text-[var(--text-primary)] border-b-2 border-[var(--accent)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'}`}
+              >
+                📝 TMA Expert
+              </button>
+              <button
+                onClick={() => setActiveTool('cheat')}
+                className={`font-bold text-[12px] uppercase tracking-widest pb-1 transition-all ${activeTool === 'cheat' ? 'text-[var(--text-primary)] border-b-2 border-[var(--accent)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'}`}
+              >
+                ⚡ Cheat Sheet
+              </button>
+              <button
+                onClick={() => setActiveTool('tutorial')}
+                className={`font-bold text-[12px] uppercase tracking-widest pb-1 transition-all ${activeTool === 'tutorial' ? 'text-[var(--text-primary)] border-b-2 border-[var(--accent)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'}`}
+              >
+                ▶️ Curated Resources
+              </button>
+            </div>
+
+            {/* Active Tool Content */}
+            <div className="flex-1 p-6 md:p-10 lg:p-12 overflow-y-auto">
+              <div className="max-w-[800px] mx-auto">
+                 {/* This is where the tool content goes. I'll replace it with a marker for now to inject the rest of the code. */}
+
+                {activeTool === 'tma' && modules.filter(m => m.id === selectedModuleId).map(module => (
+                  <div key={module.id} className="animate-fade-in space-y-8">
+                    <div className="mb-8">
+                      <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] mb-2">Assignment Input</h1>
+                      <p className="text-sm font-medium text-[var(--text-tertiary)]">Construct your TMA question to generate an AI-architected response framework.</p>
                     </div>
-                    <div>
-                      <h3 className="text-[16px] font-black tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors uppercase">{module.title}</h3>
-                      <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                        {module.isHighYield && (
-                          <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-[var(--danger)] bg-[var(--danger)]/5 border border-[var(--danger)]/10 px-2 py-0.5 rounded-md">
-                            <Flame className="w-3 h-3 fill-current" /> High-Yield PYQ Trend
+
+                    {/* Glassmorphic Input Container */}
+                    <div className="bg-[var(--bg-secondary)]/80 backdrop-blur-xl border border-[var(--border-subtle)] rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                      {/* Top accent line */}
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--accent)] to-transparent"></div>
+
+                      <div className="mb-6">
+                        <label className="flex items-center justify-between text-sm font-bold text-[var(--text-primary)] mb-4">
+                          <span>Prompt Formulation</span>
+                          <span className="bg-[var(--bg-tertiary)] text-[var(--text-secondary)] text-[10px] uppercase tracking-widest px-2 py-1 rounded-md flex items-center gap-1 font-bold">
+                            <PenTool className="w-3 h-3" /> AI Assisted
                           </span>
-                        )}
-                        <span className="text-[9px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">
-                          Relevance Score: {module.priorityScore}/100
-                        </span>
+                        </label>
+                        <textarea
+                          placeholder="Paste or type your specific Tutor-Marked Assignment question here. Include any specific constraints, required references, or structural requirements..."
+                          value={userContexts[module.id] || ''}
+                          onChange={(e) => handleContextChange(module.id, e.target.value)}
+                          className="w-full h-[200px] bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-xl p-4 focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none resize-none text-[14px] leading-relaxed shadow-inner"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-3 mb-8">
+                        <button className="bg-[var(--bg-primary)] text-[var(--text-secondary)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-[11px] font-bold flex items-center gap-1.5 hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-colors">
+                          <FileText className="w-3.5 h-3.5" /> Attach Rubric
+                        </button>
+                        <button className="bg-[var(--bg-primary)] text-[var(--text-secondary)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-[11px] font-bold flex items-center gap-1.5 hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-colors">
+                          <Library className="w-3.5 h-3.5" /> Insert Code Snippet
+                        </button>
+                      </div>
+
+                      {/* Primary Action Button Area */}
+                      <div className="flex justify-end border-t border-[var(--border-subtle)] pt-6 mt-6">
+                         {loadingActionId === `tma-${module.id}` ? (
+                            <SkeletonLoader />
+                         ) : (
+                            <button
+                              onClick={(e) => handleGenerateTMAOutline(e, module.id, module.title)}
+                              disabled={loadingActionId !== null}
+                              className="bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl px-8 py-4 text-[14px] font-black tracking-wide flex items-center gap-3 hover:opacity-90 transition-all shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:shadow-[0_6px_16px_rgba(255,255,255,0.15)] active:scale-[0.98] disabled:opacity-50"
+                            >
+                              <ArrowRight className="w-5 h-5" /> Architect TMA Answer
+                            </button>
+                         )}
+                      </div>
+                    </div>
+
+                    {/* Result Area */}
+                    {tmaOutlines[module.id] && (
+                       <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--accent)]/30 p-8 shadow-lg relative">
+                         <div className="absolute top-4 right-4 flex items-center gap-2">
+                           <button onClick={() => clearModuleCache('tma', module.id)} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
+                             <RotateCcw className="w-4 h-4" />
+                           </button>
+                         </div>
+                         <h3 className="text-[14px] font-black uppercase tracking-widest text-[var(--accent)] mb-6 flex items-center gap-2">
+                            <CheckCircle className="w-5 h-5" /> Generated Outline
+                         </h3>
+                         <div className="style-markdown text-[var(--text-primary)] max-h-[800px] overflow-y-auto pr-4">
+                           <ReactMarkdown>{tmaOutlines[module.id]}</ReactMarkdown>
+                         </div>
+                       </div>
+                    )}
+
+                    {/* Bento Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="col-span-1 bg-[var(--bg-secondary)] rounded-2xl p-6 border border-[var(--border-subtle)] hover:border-[var(--accent)]/40 transition-colors">
+                        <Flame className="w-6 h-6 text-[var(--accent)] mb-3" />
+                        <h4 className="text-[14px] font-bold text-[var(--text-primary)] mb-2">Context is Key</h4>
+                        <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed">Ensure you've selected the correct academic term and unit in the sidebar for accurate references.</p>
+                      </div>
+                      <div className="col-span-1 md:col-span-2 bg-[var(--bg-secondary)] rounded-2xl p-6 border border-[var(--border-subtle)] flex flex-col md:flex-row items-start md:items-center gap-6 relative overflow-hidden">
+                        <div className="absolute right-[-20px] bottom-[-20px] opacity-5">
+                          <BookOpen className="w-[120px] h-[120px]" />
+                        </div>
+                        <div className="flex-1 relative z-10">
+                          <h4 className="text-[14px] font-bold text-[var(--text-primary)] mb-2">Advanced Mode Available</h4>
+                          <p className="text-[12px] text-[var(--text-secondary)] mb-4 leading-relaxed">Enable advanced parameters to control output verbosity, citation style, and critical analysis depth.</p>
+                          <button className="text-[var(--accent)] text-[12px] font-bold flex items-center gap-1 hover:underline">
+                            Configure Settings <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                     <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors border border-[var(--border-subtle)] px-3 py-1.5 rounded-lg">Target Unit</span>
+                ))}
+
+                {activeTool === 'cheat' && modules.filter(m => m.id === selectedModuleId).map(module => (
+                  <div key={module.id} className="animate-fade-in space-y-8">
+                    <div className="mb-8">
+                      <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] mb-2">Unit Cheat Sheet</h1>
+                      <p className="text-sm font-medium text-[var(--text-tertiary)]">Distill this BOU unit into a high-octane summary of core concepts and top exam tips.</p>
+                    </div>
+
+                    <div className="bg-[var(--bg-secondary)]/80 backdrop-blur-xl border border-[var(--border-subtle)] rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#ffaa00] to-transparent"></div>
+                      <div className="flex justify-end pt-2">
+                        {loadingActionId === `cheat-${module.id}` ? (
+                          <SkeletonLoader />
+                        ) : cheatSheets[module.id] ? null : (
+                          <button
+                            onClick={(e) => handleGenerateCheatSheet(e, module.id, module.title, module.topics)}
+                            disabled={loadingActionId !== null}
+                            className="bg-[#ffaa00] text-black rounded-xl px-8 py-4 text-[14px] font-black tracking-wide flex items-center gap-3 hover:opacity-90 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 w-full justify-center"
+                          >
+                            <Flame className="w-5 h-5" /> Generate Exam Summary
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Result Area */}
+                      {cheatSheets[module.id] && (
+                        <div className="mt-4">
+                          <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-[14px] font-black uppercase tracking-widest text-[#ffaa00] flex items-center gap-2">
+                              <CheckCircle className="w-5 h-5" /> 1-Page Summary
+                            </h3>
+                            <button onClick={() => clearModuleCache('cheat', module.id)} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
+                              <RotateCcw className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="style-markdown text-[var(--text-primary)] max-h-[800px] overflow-y-auto pr-4">
+                            <ReactMarkdown>{cheatSheets[module.id]}</ReactMarkdown>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      )}
+                ))}
+
+                {activeTool === 'tutorial' && modules.filter(m => m.id === selectedModuleId).map(module => (
+                  <div key={module.id} className="animate-fade-in space-y-8">
+                    <div className="mb-8">
+                      <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] mb-2">Curated Resources</h1>
+                      <p className="text-sm font-medium text-[var(--text-tertiary)]">Discover the best external tutorials, videos, and articles for this specific unit.</p>
+                    </div>
+
+                    <div className="bg-[var(--bg-secondary)]/80 backdrop-blur-xl border border-[var(--border-subtle)] rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--danger)] to-transparent"></div>
+
+                      <div className="mb-6">
+                        <label className="block text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-3">Resource Preference</label>
+                        <select
+                          value={tutorialPref[module.id] || "Best Bangla Tutorials from any platform"}
+                          onChange={(e) => setTutorialPref(prev => ({ ...prev, [module.id]: e.target.value }))}
+                          className="w-full h-14 px-4 rounded-xl text-[13px] font-bold text-[var(--text-primary)] bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] focus:outline-none focus:border-[var(--danger)]/50 appearance-none cursor-pointer"
+                        >
+                          <option value="Best Bangla Tutorials from any platform">🇧🇩 Bangla Tutorials (Any Platform)</option>
+                          <option value="Best English Tutorials with animations from any platform">🇬🇧 English Tutorials (Any Platform)</option>
+                          <option value="High quality written articles (GeeksforGeeks, etc)">📝 Written Articles</option>
+                          <option value="University courses (MIT OCW, NPTEL, Coursera)">🎓 University Courses</option>
+                        </select>
+                      </div>
+
+                      <div className="pt-2">
+                        {loadingActionId === `tutorial-${module.id}` ? (
+                          <SkeletonLoader />
+                        ) : tutorials[module.id] ? (
+                          <div className="mt-2 flex flex-col gap-4">
+                            <div className="flex justify-between items-center mb-2">
+                              <h3 className="text-[14px] font-black uppercase tracking-widest text-[var(--danger)] flex items-center gap-2">
+                                <CheckCircle className="w-5 h-5" /> Results
+                              </h3>
+                              <button onClick={() => clearModuleCache('tutorial', module.id)} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
+                                <RotateCcw className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            <div className="max-h-[600px] overflow-y-auto pr-2 space-y-4">
+                              {tutorials[module.id].map((tut, i) => (
+                                <a
+                                  key={i}
+                                  href={tut.url || (tut.type === 'video'
+                                    ? `https://www.youtube.com/results?search_query=${encodeURIComponent(tut.searchQuery)}`
+                                    : `https://www.google.com/search?q=${encodeURIComponent(tut.searchQuery)}`)
+                                  }
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="block p-5 rounded-xl border border-[var(--border-subtle)] hover:border-[var(--danger)]/40 hover:shadow-lg bg-[var(--bg-primary)] transition-all group/card"
+                                >
+                                  <div className="flex items-start gap-4">
+                                    <div className="mt-1">
+                                      {tut.type === 'video' ? <Video className="w-5 h-5 text-[var(--danger)]" /> : <FileText className="w-5 h-5 text-[var(--accent)]" />}
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
+                                          {tut.provider}
+                                        </span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-tertiary)]">
+                                          {tut.language}
+                                        </span>
+                                      </div>
+                                      <h5 className="text-[15px] font-bold leading-tight mb-2 text-[var(--text-primary)] group-hover/card:text-[var(--danger)] transition-colors">
+                                        {tut.title}
+                                      </h5>
+                                      <p className="text-[12px] text-[var(--text-secondary)] leading-snug line-clamp-2">
+                                        {tut.reason}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </a>
+                              ))}
+
+                              <button
+                                onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics, true)}
+                                disabled={loadingActionId !== null}
+                                className="mt-4 h-12 w-full rounded-xl border-2 border-dashed border-[var(--border-subtle)] text-[var(--text-tertiary)] text-[12px] font-bold flex items-center justify-center gap-2 hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-colors disabled:opacity-50"
+                              >
+                                <Search className="w-4 h-4" /> Find More
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics)}
+                            disabled={loadingActionId !== null}
+                            className="bg-[var(--danger)] text-white rounded-xl px-8 py-4 text-[14px] font-black tracking-wide flex items-center justify-center gap-3 hover:opacity-90 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 w-full"
+                          >
+                            <PlayCircle className="w-5 h-5" /> Find Best Resources
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
     </div>
+
   );
 };
 

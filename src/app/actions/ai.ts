@@ -338,9 +338,9 @@ TOPICS TO MASTER: ${topics.join(', ')}
 STUDENT PREFERENCE: ${preference}
 
 TASK: Find the absolute best 3 online resources (tutorials, videos, or articles) that perfectly explain these topics according to the student's preference.
-Focus on highly reputable channels (e.g., Neso Academy, Gate Smashers, Anisul Islam, FreeCodeCamp) or top-tier domains (GeeksforGeeks, NPTEL).
+Focus on highly reputable channels (e.g., Neso Academy, Gate Smashers, Anisul Islam, FreeCodeCamp), top-tier domains (GeeksforGeeks, NPTEL, Coursera, edX, MIT OpenCourseWare), or any other high-quality educational platform.
 
-Respond ONLY with the requested JSON structure. Do NOT hallucinate URLs, provide a highly optimized 'searchQuery' instead.`;
+CRITICAL INSTRUCTION: You must provide actual, valid, live URLs for these resources. Do NOT hallucinate URLs or provide dead links. Search for real links from YouTube, GFG, MIT OCW, NPTEL, Coursera, etc. Respond ONLY with the requested JSON structure. Include both a direct 'url' and a fallback 'searchQuery'.`;
 
     try {
       const response = await ai.models.generateContent({
@@ -354,12 +354,14 @@ Respond ONLY with the requested JSON structure. Do NOT hallucinate URLs, provide
               type: Type.OBJECT,
               properties: {
                 title: { type: Type.STRING },
-                type: { type: Type.STRING, description: "Video, Article, etc." },
-                platform: { type: Type.STRING, description: "YouTube, GFG, etc." },
-                searchQuery: { type: Type.STRING, description: "The exact search string to find this" },
-                why: { type: Type.STRING, description: "Why it fits their preference" }
+                type: { type: Type.STRING, description: "video, article, or interactive" },
+                provider: { type: Type.STRING, description: "YouTube, GFG, Coursera, etc." },
+                reason: { type: Type.STRING, description: "Why it fits their preference" },
+                language: { type: Type.STRING, description: "Bangla, English, etc." },
+                searchQuery: { type: Type.STRING, description: "A fallback search string" },
+                url: { type: Type.STRING, description: "A VALID, working direct URL to the resource. You must verify this exists." }
               },
-              required: ["title", "type", "platform", "searchQuery", "why"]
+              required: ["title", "type", "provider", "reason", "language", "searchQuery", "url"]
             }
           }
         }

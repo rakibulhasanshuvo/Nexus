@@ -105,4 +105,5 @@ export interface StructuredTutorial {
   type: 'video' | 'article' | 'interactive';
   language: 'Bangla' | 'English' | 'Hindi' | string;
   searchQuery: string;
+  url?: string;
 }

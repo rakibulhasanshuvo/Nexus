@@ -205,7 +205,7 @@ const ResourceFinderInner: React.FC = () => {
                 >
                   <option value="">Select Target Course</option>
                   {semester && semester.courses.map((c) => (
-                    <option key={c.id} value={c.id}>{c.code} - {c.name}</option>
+                    <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
                 <Library className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors pointer-events-none" />

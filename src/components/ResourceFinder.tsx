@@ -6,7 +6,7 @@ import { generateCheatSheetAction, generateTMAOutlineAction, findStructuredTutor
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { COURSE_MAPPING, COURSE_DETAILS } from '@/lib/constants';
 import { StructuredTutorial } from '@/lib/types';
-import { Library, Search, Loader2, BookOpen, RotateCcw, Flame, PenTool, CheckCircle, ChevronDown, ChevronUp, Bot, ArrowRight, BookA, PlayCircle, Video, FileText } from 'lucide-react';
+import { RotateCcw, Library, Search, Loader2, BookOpen, Flame, PenTool, CheckCircle, ChevronDown, ChevronUp, Bot, ArrowRight, BookA, PlayCircle, Video, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 
@@ -66,6 +66,12 @@ const ResourceFinderInner: React.FC = () => {
   const [userContexts, setUserContexts] = useLocalStorage<Record<string, string>>('bou_resource_user_contexts', {});
   const [tutorials, setTutorials] = useLocalStorage<Record<string, StructuredTutorial[]>>('bou_resource_tutorials', {});
   const [tutorialPref, setTutorialPref] = useLocalStorage<Record<string, string>>('bou_resource_tutorial_prefs', {});
+  const [activeTabs, setActiveTabs] = useState<Record<string, 'cheat' | 'tma' | 'tutorial'>>({});
+
+  const handleTabChange = (moduleId: string, tab: 'cheat' | 'tma' | 'tutorial') => {
+    setActiveTabs(prev => ({ ...prev, [moduleId]: tab }));
+  };
+
 
   const handleContextChange = (moduleId: string, value: string) => {
     setUserContexts(prev => ({ ...prev, [moduleId]: value }));
@@ -263,10 +269,48 @@ const ResourceFinderInner: React.FC = () => {
                       exit={{ height: 0, opacity: 0 }}
                       className="border-t border-[var(--border-subtle)] bg-[var(--bg-tertiary)]/50"
                     >
-                      <div className="p-6 grid grid-cols-1 xl:grid-cols-3 gap-6">
+                      <div className="p-6 flex flex-col gap-6">
                         
+                        {/* Tab Navigation */}
+                        <div className="flex gap-2 border-b border-[var(--border-subtle)] pb-2 overflow-x-auto hide-scrollbar">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleTabChange(module.id, 'cheat'); }}
+                            className={`px-4 py-2 text-[11px] font-black uppercase tracking-widest rounded-t-xl transition-colors shrink-0 ${
+                              (activeTabs[module.id] || 'cheat') === 'cheat'
+                                ? 'bg-[var(--bg-secondary)] text-[var(--accent)] border-t border-l border-r border-[var(--border-subtle)] border-b-2 border-b-[var(--bg-secondary)] -mb-[3px]'
+                                : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50 border border-transparent'
+                            }`}
+                          >
+                            <Flame className="w-4 h-4 inline-block mr-2" />
+                            1-Page Cheat Sheet
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleTabChange(module.id, 'tma'); }}
+                            className={`px-4 py-2 text-[11px] font-black uppercase tracking-widest rounded-t-xl transition-colors shrink-0 ${
+                              (activeTabs[module.id] || 'cheat') === 'tma'
+                                ? 'bg-[var(--bg-secondary)] text-[var(--accent)] border-t border-l border-r border-[var(--border-subtle)] border-b-2 border-b-[var(--bg-secondary)] -mb-[3px]'
+                                : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50 border border-transparent'
+                            }`}
+                          >
+                            <PenTool className="w-4 h-4 inline-block mr-2" />
+                            TMA Expert
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleTabChange(module.id, 'tutorial'); }}
+                            className={`px-4 py-2 text-[11px] font-black uppercase tracking-widest rounded-t-xl transition-colors shrink-0 ${
+                              (activeTabs[module.id] || 'cheat') === 'tutorial'
+                                ? 'bg-[var(--bg-secondary)] text-[var(--danger)] border-t border-l border-r border-[var(--border-subtle)] border-b-2 border-b-[var(--bg-secondary)] -mb-[3px]'
+                                : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50 border border-transparent'
+                            }`}
+                          >
+                            <PlayCircle className="w-4 h-4 inline-block mr-2" />
+                            Curated Resources
+                          </button>
+                        </div>
+
                         {/* Box 1: Cheat Sheet Generator */}
-                        <div className="apple-card bg-[var(--bg-secondary)] p-5 shadow-sm border border-[var(--border-subtle)] flex flex-col gap-4 group/cheat overflow-hidden relative">
+                        {(activeTabs[module.id] || 'cheat') === 'cheat' && (
+                        <div className="apple-card bg-[var(--bg-secondary)] p-6 shadow-sm border border-[var(--border-subtle)] flex flex-col gap-6 group/cheat overflow-hidden relative w-full">
                           {cheatSheets[module.id] && <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent)]/5 blur-3xl rounded-full" />}
                           <div className="flex items-center justify-between z-10">
                             <div className="flex items-center gap-2">
@@ -293,7 +337,7 @@ const ResourceFinderInner: React.FC = () => {
                           {loadingActionId === `cheat-${module.id}` ? (
                             <SkeletonLoader />
                           ) : cheatSheets[module.id] ? (
-                            <div className="mt-2 text-[13px] font-medium p-5 bg-[var(--accent-subtle)] rounded-xl border border-[var(--accent)]/10 z-10 max-h-[400px] overflow-y-auto style-markdown text-[var(--text-primary)]">
+                            <div className="mt-2 text-[14px] font-medium p-6 bg-[var(--accent-subtle)] rounded-xl border border-[var(--accent)]/10 z-10 max-h-[600px] overflow-y-auto style-markdown text-[var(--text-primary)]">
                               <ReactMarkdown>{cheatSheets[module.id]}</ReactMarkdown>
                             </div>
                           ) : (
@@ -309,8 +353,11 @@ const ResourceFinderInner: React.FC = () => {
                           )}
                         </div>
 
+                        )}
+
                         {/* Box 2: AI TMA Outline Expert */}
-                        <div className="apple-card bg-[var(--bg-secondary)] p-5 shadow-sm border border-[var(--border-subtle)] flex flex-col gap-4 group/tma overflow-hidden relative">
+                        {(activeTabs[module.id] || 'cheat') === 'tma' && (
+                        <div className="apple-card bg-[var(--bg-secondary)] p-6 shadow-sm border border-[var(--border-subtle)] flex flex-col gap-6 group/tma overflow-hidden relative w-full">
                           {tmaOutlines[module.id] && <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent)]/5 blur-3xl rounded-full" />}
                           <div className="flex items-center justify-between z-10">
                             <div className="flex items-center gap-2">
@@ -345,7 +392,7 @@ const ResourceFinderInner: React.FC = () => {
                           {loadingActionId === `tma-${module.id}` ? (
                             <SkeletonLoader />
                           ) : tmaOutlines[module.id] ? (
-                            <div className="mt-2 text-[13px] font-medium p-5 bg-[var(--accent-subtle)] rounded-xl border border-[var(--accent)]/20 z-10 max-h-[400px] overflow-y-auto style-markdown text-[var(--text-primary)]">
+                            <div className="mt-2 text-[14px] font-medium p-6 bg-[var(--accent-subtle)] rounded-xl border border-[var(--accent)]/20 z-10 max-h-[600px] overflow-y-auto style-markdown text-[var(--text-primary)]">
                                <ReactMarkdown>{tmaOutlines[module.id]}</ReactMarkdown>
                             </div>
                           ) : (
@@ -361,8 +408,11 @@ const ResourceFinderInner: React.FC = () => {
                           )}
                         </div>
 
+                        )}
+
                         {/* Box 3: Video Tutorial Recommendations */}
-                        <div className="apple-card bg-[var(--bg-secondary)] p-5 shadow-sm border border-[var(--border-subtle)] flex flex-col gap-4 group/tutorial overflow-hidden relative">
+                        {(activeTabs[module.id] || 'cheat') === 'tutorial' && (
+                        <div className="apple-card bg-[var(--bg-secondary)] p-6 shadow-sm border border-[var(--border-subtle)] flex flex-col gap-6 group/tutorial overflow-hidden relative w-full">
                           {tutorials[module.id] && <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--danger)]/5 blur-3xl rounded-full" />}
                           <div className="flex items-center justify-between z-10">
                             <div className="flex items-center gap-2">
@@ -401,7 +451,7 @@ const ResourceFinderInner: React.FC = () => {
                           {loadingActionId === `tutorial-${module.id}` ? (
                             <SkeletonLoader />
                           ) : tutorials[module.id] ? (
-                            <div className="mt-2 flex flex-col gap-3 z-10 max-h-[400px] overflow-y-auto pr-1 pb-1">
+                            <div className="mt-2 flex flex-col gap-4 z-10 max-h-[600px] overflow-y-auto pr-2 pb-1">
                               {tutorials[module.id].map((tut, i) => (
                                 <a 
                                   key={i}
@@ -458,6 +508,8 @@ const ResourceFinderInner: React.FC = () => {
                             </button>
                           )}
                         </div>
+
+                        )}
 
                       </div>
                     </motion.div>

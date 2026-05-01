@@ -158,7 +158,7 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
         {/* Content - No Header */}
         <div className="flex-1 overflow-y-auto apple-scrollbar bg-studio">
-          <div className="max-w-[1700px] mx-auto p-3 lg:p-6 animate-apple-in">
+          <div className="max-w-full mx-auto p-3 lg:p-6 animate-apple-in">
             {/* Mobile Nav Trigger */}
             <button
               className="lg:hidden mb-6 p-3 rounded-2xl bg-[var(--bg-secondary)] shadow-sm text-[var(--text-primary)] inline-flex items-center gap-2 font-bold text-xs"

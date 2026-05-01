@@ -1,204 +1,35 @@
-"use client";
+import re
 
-import React, { useState } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { generateCheatSheetAction, generateTMAOutlineAction, findStructuredTutorialsAction } from '@/app/actions/ai';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { COURSE_MAPPING, COURSE_DETAILS } from '@/lib/constants';
-import { StructuredTutorial } from '@/lib/types';
-import { RotateCcw, Library, Search, BookOpen, Flame, PenTool, CheckCircle, ArrowRight, BookA, PlayCircle, Video, FileText } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import ReactMarkdown from 'react-markdown';
+with open("src/components/ResourceFinder.tsx", "r") as f:
+    content = f.read()
 
-// Skeleton Component
-const SkeletonLoader = () => (
-  <div className="animate-pulse space-y-3 mt-4 z-10 w-full">
-    <div className="h-4 bg-[var(--bg-tertiary)] rounded w-3/4"></div>
-    <div className="h-4 bg-[var(--bg-tertiary)] rounded w-full"></div>
-    <div className="h-4 bg-[var(--bg-tertiary)] rounded w-5/6"></div>
-    <div className="h-4 bg-[var(--bg-tertiary)] rounded w-2/3"></div>
-  </div>
-);
+# 1. Update state variables
+content = re.sub(
+    r'const \[expandedModule, setExpandedModule\] = useState<string \| null>\(null\);',
+    r'const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);',
+    content
+)
 
-const ResourceFinderInner: React.FC = () => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+content = re.sub(
+    r'const \[activeTabs, setActiveTabs\] = useState<Record<string, \'cheat\' \| \'tma\' \| \'tutorial\'>>\(\{\}\);\n\n  const handleTabChange = \(moduleId: string, tab: \'cheat\' \| \'tma\' \| \'tutorial\'\) => \{\n    setActiveTabs\(prev => \(\{ \.\.\.prev, \[moduleId\]: tab \}\)\);\n  \};\n',
+    r'',
+    content
+)
 
-  // URL State Syncing
-  const semesterParam = searchParams.get('semester');
-  const courseParam = searchParams.get('course');
-  
-  const [selectedSemester, setSelectedSemester] = useState<number>(semesterParam ? parseInt(semesterParam) : 0);
-  const [selectedCourse, setSelectedCourse] = useState<string>(courseParam || '');
-  
-  // Update URL function
-  const updateUrlParams = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) params.set(key, value);
-    else params.delete(key);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
+# Replace instances of setExpandedModule in handleSemesterChange and handleCourseChange
+content = re.sub(
+    r'setExpandedModule\(null\);',
+    r'setSelectedModuleId(null);',
+    content
+)
 
-  const handleSemesterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = parseInt(e.target.value);
-    setSelectedSemester(val);
-    setSelectedCourse('');
-    setSelectedModuleId(null);
-    updateUrlParams('semester', val.toString());
-    updateUrlParams('course', '');
-  };
+# 2. Extract tools logic and layout into a Command Center
+# We need to construct the Command Center UI and place it after the Control Strip
+# Find the end of Control Strip
+control_strip_end = content.find("      {/* Dynamic Content Area */}")
 
-  const handleCourseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    setSelectedCourse(val);
-    setSelectedModuleId(null);
-    updateUrlParams('course', val);
-  };
-
-  // UI States
-  const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
-  const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
-  
-  // Data States (Persistent Cache for AI responses)
-  const [cheatSheets, setCheatSheets] = useLocalStorage<Record<string, string>>('bou_resource_cheatsheets', {});
-  const [tmaOutlines, setTmaOutlines] = useLocalStorage<Record<string, string>>('bou_resource_tma_outlines', {});
-  const [userContexts, setUserContexts] = useLocalStorage<Record<string, string>>('bou_resource_user_contexts', {});
-  const [tutorials, setTutorials] = useLocalStorage<Record<string, StructuredTutorial[]>>('bou_resource_tutorials', {});
-  const [tutorialPref, setTutorialPref] = useLocalStorage<Record<string, string>>('bou_resource_tutorial_prefs', {});
-
-
-  const handleContextChange = (moduleId: string, value: string) => {
-    setUserContexts(prev => ({ ...prev, [moduleId]: value }));
-  };
-
-  const clearModuleCache = (type: 'cheat' | 'tma' | 'tutorial', moduleId: string) => {
-    if (type === 'cheat') {
-      const next = { ...cheatSheets };
-      delete next[moduleId];
-      setCheatSheets(next);
-    } else if (type === 'tma') {
-      const next = { ...tmaOutlines };
-      delete next[moduleId];
-      setTmaOutlines(next);
-    } else if (type === 'tutorial') {
-      const next = { ...tutorials };
-      delete next[moduleId];
-      setTutorials(next);
-    }
-  };
-
-  const semester = COURSE_MAPPING[selectedSemester];
-  const courseDetail = COURSE_DETAILS[selectedCourse];
-  
-  const modules = selectedCourse && courseDetail ? courseDetail.topics.map((topic, idx) => ({
-    id: `${selectedCourse}-unit-${idx + 1}`,
-    courseId: selectedCourse,
-    unit: idx + 1,
-    title: topic,
-    topics: [topic, ...(courseDetail.exam_intel || [])], 
-    isHighYield: idx % 2 === 1,
-    priorityScore: idx % 2 === 1 ? 95 : 65
-  })) : [];
-
-  const handleGenerateCheatSheet = async (e: React.MouseEvent, moduleId: string, unitTitle: string, topics: string[]) => {
-    e.stopPropagation();
-    if (cheatSheets[moduleId]) return;
-    setLoadingActionId(`cheat-${moduleId}`);
-    try {
-      const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
-      // Using Secure Next.js Server Action
-      const result = await generateCheatSheetAction(courseName, unitTitle, topics);
-      setCheatSheets(prev => ({ ...prev, [moduleId]: result }));
-      setSelectedModuleId(moduleId);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingActionId(null);
-    }
-  };
-
-  const handleGenerateTMAOutline = async (e: React.MouseEvent, moduleId: string, unitTitle: string) => {
-    e.stopPropagation();
-    if (tmaOutlines[moduleId]) return;
-    const prompt = userContexts[moduleId] || "Analyze standard TMA questions for this topic";
-    setLoadingActionId(`tma-${moduleId}`);
-    try {
-      const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
-      // Using Secure Next.js Server Action
-      const result = await generateTMAOutlineAction(courseName, unitTitle, prompt);
-      setTmaOutlines(prev => ({ ...prev, [moduleId]: result }));
-      setSelectedModuleId(moduleId);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingActionId(null);
-    }
-  };
-
-  const handleGenerateTutorials = async (e: React.MouseEvent, moduleId: string, unitTitle: string, topics: string[], force = false) => {
-    e.stopPropagation();
-    if (tutorials[moduleId] && !force) return;
-    setLoadingActionId(`tutorial-${moduleId}`);
-    try {
-      const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
-      const pref = tutorialPref[moduleId] || "Best Bangla Tutorials from any platform";
-      // Using Secure Next.js Server Action
-      const result = await findStructuredTutorialsAction(courseName, unitTitle, topics, pref);
-      setTutorials(prev => ({ ...prev, [moduleId]: result }));
-      setSelectedModuleId(moduleId);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingActionId(null);
-    }
-  };
-
-  return (
-    <div className="space-y-8 animate-fade-in w-full flex flex-col min-h-screen pb-20">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-[var(--text-primary)] uppercase">Syllabus Vault<br/>& PYQ Analyzer</h1>
-          <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-tertiary)] mt-2">BOU Official Curriculum</h2>
-          <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mt-2 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse" />
-            AI & Server-Actions Secured
-          </p>
-        </div>
-      </div>
-
-      {/* Control Strip */}
-      <div className="apple-card bg-[var(--bg-secondary)]/80 backdrop-blur-xl border-[var(--border-subtle)] p-2 shadow-xl">
-        <div className="flex flex-col md:flex-row gap-2">
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div className="relative group">
-              <select 
-                value={selectedSemester} 
-                onChange={handleSemesterChange} 
-                className="apple-select w-full !pl-12 h-14 font-black uppercase tracking-widest text-[11px] appearance-none cursor-pointer hover:bg-[var(--bg-tertiary)] bg-[var(--bg-secondary)] border-[var(--border-subtle)] text-[var(--text-primary)] transition-colors"
-                aria-label="Select Semester"
-              >
-                {COURSE_MAPPING.map((_, idx) => (<option key={idx} value={idx}>Term S0{idx + 1}</option>))}
-              </select>
-              <Library className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors" />
-            </div>
-            <div className="relative group">
-              <select 
-                value={selectedCourse} 
-                onChange={handleCourseChange} 
-                className="apple-select w-full !pl-12 h-14 font-black uppercase tracking-widest text-[11px] appearance-none cursor-pointer hover:bg-[var(--bg-tertiary)] bg-[var(--bg-secondary)] border-[var(--border-subtle)] text-[var(--text-primary)] transition-colors"
-                aria-label="Select Course"
-              >
-                <option value="">Select Target Course</option>
-                {semester.courses.filter(c => c.type === 'theory').map(c => (<option key={c.id} value={c.id}>{c.name}</option>))}
-              </select>
-              <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-
+# Command Center UI string
+command_center_ui = """
       {/* Subject Command Center */}
       {selectedCourse && courseDetail && (
         <div className="space-y-6 mb-8">
@@ -219,21 +50,21 @@ const ResourceFinderInner: React.FC = () => {
             </div>
 
             {selectedModuleId && (() => {
-              const currentModule = modules.find(m => m.id === selectedModuleId)!;
+              const module = modules.find(m => m.id === selectedModuleId)!;
               return (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* 1-Page Cheat Sheet */}
                   <div className="apple-card bg-[var(--bg-secondary)] p-6 shadow-sm border border-[var(--border-subtle)] flex flex-col gap-6 group/cheat relative">
-                    {cheatSheets[currentModule.id] && <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent)]/5 blur-3xl rounded-full pointer-events-none" />}
+                    {cheatSheets[module.id] && <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent)]/5 blur-3xl rounded-full pointer-events-none" />}
                     <div className="flex items-center justify-between z-10">
                       <div className="flex items-center gap-2">
                         <Flame className="w-5 h-5 text-[var(--accent)]" />
                         <h4 className="font-black text-[11px] text-[var(--text-primary)] uppercase tracking-[0.2em]">1-Page Cheat Sheet</h4>
                       </div>
-                      {cheatSheets[currentModule.id] && (
+                      {cheatSheets[module.id] && (
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={(e) => { e.stopPropagation(); clearModuleCache('cheat', currentModule.id); }}
+                            onClick={(e) => { e.stopPropagation(); clearModuleCache('cheat', module.id); }}
                             className="p-1 hover:bg-[var(--bg-tertiary)] rounded-md transition-colors group/refresh"
                             title="Regenerate"
                           >
@@ -247,16 +78,16 @@ const ResourceFinderInner: React.FC = () => {
                       Distill this BOU unit into a high-octane summary. Extracts core concepts, formulas, code snippets, and top exam tips.
                     </p>
 
-                    {loadingActionId === `cheat-${currentModule.id}` ? (
+                    {loadingActionId === `cheat-${module.id}` ? (
                       <SkeletonLoader />
-                    ) : cheatSheets[currentModule.id] ? (
+                    ) : cheatSheets[module.id] ? (
                       <div className="mt-2 text-[14px] font-medium p-6 bg-[var(--accent-subtle)] rounded-xl border border-[var(--accent)]/10 z-10 max-h-[600px] overflow-y-auto style-markdown text-[var(--text-primary)]">
-                        <ReactMarkdown>{cheatSheets[currentModule.id]}</ReactMarkdown>
+                        <ReactMarkdown>{cheatSheets[module.id]}</ReactMarkdown>
                       </div>
                     ) : (
                       <button
                         aria-label="Generate 1-Page Summary"
-                        onClick={(e) => handleGenerateCheatSheet(e, currentModule.id, currentModule.title, currentModule.topics)}
+                        onClick={(e) => handleGenerateCheatSheet(e, module.id, module.title, module.topics)}
                         disabled={loadingActionId !== null}
                         className="mt-auto h-12 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 z-10"
                       >
@@ -268,16 +99,16 @@ const ResourceFinderInner: React.FC = () => {
 
                   {/* TMA Expert */}
                   <div className="apple-card bg-[var(--bg-secondary)] p-6 shadow-sm border border-[var(--border-subtle)] flex flex-col gap-6 group/tma relative">
-                    {tmaOutlines[currentModule.id] && <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent)]/5 blur-3xl rounded-full pointer-events-none" />}
+                    {tmaOutlines[module.id] && <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent)]/5 blur-3xl rounded-full pointer-events-none" />}
                     <div className="flex items-center justify-between z-10">
                       <div className="flex items-center gap-2">
                         <PenTool className="w-5 h-5 text-[var(--accent)]" />
                         <h4 className="text-[12px] font-black uppercase tracking-widest text-[var(--text-primary)]">TMA Expert</h4>
                       </div>
-                      {tmaOutlines[currentModule.id] && (
+                      {tmaOutlines[module.id] && (
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={(e) => { e.stopPropagation(); clearModuleCache('tma', currentModule.id); }}
+                            onClick={(e) => { e.stopPropagation(); clearModuleCache('tma', module.id); }}
                             className="p-1 hover:bg-[var(--bg-tertiary)] rounded-md transition-colors group/refresh"
                             title="Regenerate"
                           >
@@ -294,22 +125,22 @@ const ResourceFinderInner: React.FC = () => {
                     <input
                       type="text"
                       placeholder="e.g., 'Describe the differences...'"
-                      value={userContexts[currentModule.id] || ''}
-                      onChange={(e) => handleContextChange(currentModule.id, e.target.value)}
+                      value={userContexts[module.id] || ''}
+                      onChange={(e) => handleContextChange(module.id, e.target.value)}
                       className="h-10 px-4 rounded-xl text-[12px] font-medium bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border-subtle)] focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-subtle)] transition-all z-10"
                     />
 
-                    {loadingActionId === `tma-${currentModule.id}` ? (
+                    {loadingActionId === `tma-${module.id}` ? (
                       <SkeletonLoader />
-                    ) : tmaOutlines[currentModule.id] ? (
+                    ) : tmaOutlines[module.id] ? (
                       <div className="mt-2 text-[14px] font-medium p-6 bg-[var(--accent-subtle)] rounded-xl border border-[var(--accent)]/20 z-10 max-h-[600px] overflow-y-auto style-markdown text-[var(--text-primary)] flex-1">
-                         <ReactMarkdown>{tmaOutlines[currentModule.id]}</ReactMarkdown>
+                         <ReactMarkdown>{tmaOutlines[module.id]}</ReactMarkdown>
                       </div>
                     ) : (
                       <button
                         aria-label="Generate TMA Strategy"
                         disabled={loadingActionId !== null}
-                        onClick={(e) => handleGenerateTMAOutline(e, currentModule.id, currentModule.title)}
+                        onClick={(e) => handleGenerateTMAOutline(e, module.id, module.title)}
                         className="mt-auto h-12 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 disabled:bg-[var(--bg-tertiary)] disabled:text-[var(--text-tertiary)] z-10"
                       >
                         <ArrowRight className="w-4 h-4" />
@@ -320,16 +151,16 @@ const ResourceFinderInner: React.FC = () => {
 
                   {/* Curated Resources */}
                   <div className="apple-card bg-[var(--bg-secondary)] p-6 shadow-sm border border-[var(--border-subtle)] flex flex-col gap-6 group/tutorial relative">
-                    {tutorials[currentModule.id] && <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--danger)]/5 blur-3xl rounded-full pointer-events-none" />}
+                    {tutorials[module.id] && <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--danger)]/5 blur-3xl rounded-full pointer-events-none" />}
                     <div className="flex items-center justify-between z-10">
                       <div className="flex items-center gap-2">
                         <PlayCircle className="w-5 h-5 text-[var(--danger)]" />
                         <h4 className="font-black text-[11px] text-[var(--text-primary)] uppercase tracking-[0.2em]">Curated Resources</h4>
                       </div>
-                      {tutorials[currentModule.id] && (
+                      {tutorials[module.id] && (
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={(e) => { e.stopPropagation(); clearModuleCache('tutorial', currentModule.id); }}
+                            onClick={(e) => { e.stopPropagation(); clearModuleCache('tutorial', module.id); }}
                             className="p-1 hover:bg-[var(--bg-tertiary)] rounded-md transition-colors group/refresh"
                             title="Clear & Refresh"
                           >
@@ -344,8 +175,8 @@ const ResourceFinderInner: React.FC = () => {
                     </p>
 
                     <select
-                      value={tutorialPref[currentModule.id] || "Best Bangla Tutorials from any platform"}
-                      onChange={(e) => setTutorialPref(prev => ({ ...prev, [currentModule.id]: e.target.value }))}
+                      value={tutorialPref[module.id] || "Best Bangla Tutorials from any platform"}
+                      onChange={(e) => setTutorialPref(prev => ({ ...prev, [module.id]: e.target.value }))}
                       onClick={(e) => e.stopPropagation()}
                       className="h-10 px-3 rounded-xl text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)] bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] focus:outline-none focus:border-[var(--danger)]/30 focus:ring-2 focus:ring-[var(--danger)]/10 z-10 appearance-none cursor-pointer"
                     >
@@ -355,11 +186,11 @@ const ResourceFinderInner: React.FC = () => {
                       <option value="University courses (MIT OCW, NPTEL, Coursera)">🎓 University Courses</option>
                     </select>
 
-                    {loadingActionId === `tutorial-${currentModule.id}` ? (
+                    {loadingActionId === `tutorial-${module.id}` ? (
                       <SkeletonLoader />
-                    ) : tutorials[currentModule.id] ? (
+                    ) : tutorials[module.id] ? (
                       <div className="mt-2 flex flex-col gap-4 z-10 max-h-[600px] overflow-y-auto pr-2 pb-1 flex-1">
-                        {tutorials[currentModule.id].map((tut, i) => (
+                        {tutorials[module.id].map((tut, i) => (
                           <a
                             key={i}
                             href={tut.url || (tut.type === 'video'
@@ -395,7 +226,7 @@ const ResourceFinderInner: React.FC = () => {
                         ))}
                         <button
                           aria-label="Find Video Lectures"
-                          onClick={(e) => handleGenerateTutorials(e, currentModule.id, currentModule.title, currentModule.topics, true)}
+                          onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics, true)}
                           disabled={loadingActionId !== null}
                           className="mt-2 h-10 w-full rounded-xl border-2 border-dashed border-[var(--border-subtle)] text-[var(--text-tertiary)] text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 shrink-0"
                         >
@@ -406,7 +237,7 @@ const ResourceFinderInner: React.FC = () => {
                     ) : (
                       <button
                         aria-label="Find Video Content"
-                        onClick={(e) => handleGenerateTutorials(e, currentModule.id, currentModule.title, currentModule.topics)}
+                        onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics)}
                         disabled={loadingActionId !== null}
                         className="mt-auto h-12 rounded-xl bg-[var(--danger)] text-[var(--bg-primary)] text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-colors disabled:opacity-50 z-10 shrink-0"
                       >
@@ -421,35 +252,30 @@ const ResourceFinderInner: React.FC = () => {
           </div>
         </div>
       )}
-      {/* Dynamic Content Area */}
-      {!selectedCourse ? (
-        <div className="flex-1 apple-card bg-[var(--bg-tertiary)]/50 border-dashed border-2 border-[var(--border-subtle)] flex flex-col items-center justify-center p-12 lg:p-20 relative overflow-hidden group">
-          <BookA className="absolute w-[800px] h-[800px] text-[var(--text-primary)]/[0.02] -bottom-40 -right-20 pointer-events-none group-hover:scale-[1.05] transition-transform duration-1000 ease-out" />
-          <div className="w-24 h-24 rounded-[32px] bg-[var(--bg-secondary)] shadow-2xl flex items-center justify-center mb-10 border border-[var(--border-subtle)] z-10">
-            <Search className="w-10 h-10 text-[var(--text-tertiary)]/30" />
-          </div>
-          <h3 className="text-[18px] lg:text-[24px] font-black text-[var(--text-primary)] uppercase tracking-[0.3em] mb-4 text-center z-10 leading-tight">
-            Select Course to <br/> Unlock Syllabus Vault
-          </h3>
-          <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest max-w-md text-center leading-relaxed z-10">
-            Load a course to view official BOU modules, high-yield PYQ exam tags, and instantly generate assignment outlines or study cheat sheets.
-          </p>
-        </div>
-      ) : !courseDetail ? (
-        <div className="flex-1 apple-card bg-[var(--bg-tertiary)]/50 border-dashed border-2 border-[var(--warning)]/50 flex flex-col items-center justify-center p-12 lg:p-20 relative">
-           <h3 className="text-[18px] font-black text-[var(--text-primary)] uppercase tracking-[0.3em] mb-4 text-center">Module Data Pending</h3>
-           <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest max-w-md text-center">We are still digitizing the syllabus map for this specific course. Please check Phase 1 courses (e.g. Structured Programming or Physics).</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <AnimatePresence>
-            {modules.map((module) => (
-              <motion.div 
-                layout 
-                key={module.id} 
+"""
+content = content[:control_strip_end] + command_center_ui + content[control_strip_end:]
+
+
+# 3. Simplify unit mapping list
+# Replace the <AnimatePresence> that contains the module cards with a simpler one
+
+# Find where the mapping starts
+modules_map_start = content.find("{modules.map((module) => (")
+# Find the ending of that section
+# Since we know the previous structure, we'll replace everything from modules.map to the end of that block.
+# Look for the last motion.div inside the map
+old_modules_block_end = content.find("              </motion.div>\n            ))}\n          </AnimatePresence>")
+
+if modules_map_start != -1 and old_modules_block_end != -1:
+    old_modules_block_end += len("              </motion.div>\n            ))}\n          </AnimatePresence>")
+
+    new_modules_block = """{modules.map((module) => (
+              <motion.div
+                layout
+                key={module.id}
                 className={`apple-card overflow-hidden transition-all duration-300 ${selectedModuleId === module.id ? 'border-[var(--accent)]/50 shadow-[var(--card-shadow-elevated)] scale-[1.01] z-20 relative bg-[var(--bg-secondary)]' : 'border-[var(--border-subtle)]/50 hover:border-[var(--border-subtle)] bg-[var(--bg-secondary)]'}`}
               >
-                <div 
+                <div
                   className="p-5 cursor-pointer flex items-center justify-between bg-[var(--bg-secondary)] group"
                   onClick={() => setSelectedModuleId(selectedModuleId === module.id ? null : module.id)}
                 >
@@ -486,17 +312,10 @@ const ResourceFinderInner: React.FC = () => {
                 </div>
               </motion.div>
             ))}
-          </AnimatePresence>
-        </div>
-      )}
-    </div>
-  );
-};
+          </AnimatePresence>"""
 
-export default function ResourceFinder() {
-  return (
-    <React.Suspense fallback={<SkeletonLoader />}>
-      <ResourceFinderInner />
-    </React.Suspense>
-  );
-}
+    content = content[:modules_map_start] + new_modules_block + content[old_modules_block_end:]
+
+
+with open("src/components/ResourceFinder.tsx", "w") as f:
+    f.write(content)

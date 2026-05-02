@@ -736,94 +736,92 @@ const ResourceFinderInner: React.FC = () => {
                         </h3>
                         <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest px-2 py-1 rounded bg-[var(--bg-tertiary)]">Live Search</span>
                       </div>
-                        <label className="block text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-3">Resource Preference</label>
-                        <select
-                          value={tutorialPref[module.id] || "Best Bangla Tutorials from any platform"}
-                          onChange={(e) => setTutorialPref(prev => ({ ...prev, [module.id]: e.target.value }))}
-                          className="w-full h-14 px-4 rounded-xl text-[13px] font-bold text-[var(--text-primary)] bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] focus:outline-none focus:border-[var(--danger)]/50 appearance-none cursor-pointer"
-                        >
-                          <option value="Best Bangla Tutorials from any platform">🇧🇩 Bangla Tutorials (Any Platform)</option>
-                          <option value="Best English Tutorials with animations from any platform">🇬🇧 English Tutorials (Any Platform)</option>
-                          <option value="High quality written articles (GeeksforGeeks, etc)">📝 Written Articles</option>
-                          <option value="University courses (MIT OCW, NPTEL, Coursera)">🎓 University Courses</option>
-                        </select>
-                      </div>
+                      <label className="block text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-3">Resource Preference</label>
+                      <select
+                        value={tutorialPref[module.id] || "Best Bangla Tutorials from any platform"}
+                        onChange={(e) => setTutorialPref(prev => ({ ...prev, [module.id]: e.target.value }))}
+                        className="w-full h-14 px-4 rounded-xl text-[13px] font-bold text-[var(--text-primary)] bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] focus:outline-none focus:border-[var(--danger)]/50 appearance-none cursor-pointer"
+                      >
+                        <option value="Best Bangla Tutorials from any platform">🇧🇩 Bangla Tutorials (Any Platform)</option>
+                        <option value="Best English Tutorials with animations from any platform">🇬🇧 English Tutorials (Any Platform)</option>
+                        <option value="High quality written articles (GeeksforGeeks, etc)">📝 Written Articles</option>
+                        <option value="University courses (MIT OCW, NPTEL, Coursera)">🎓 University Courses</option>
+                      </select>
+                    </div>
 
-                      <div className="pt-2">
-                        {loadingActionId === `tutorial-${module.id}` ? (
-                          <SkeletonLoader phase={loadingPhase} />
-                        ) : tutorials[module.id] ? (
-                          <div className="mt-2 flex flex-col gap-4">
-                            <div className="flex justify-between items-center mb-2">
-                              <h3 className="text-[14px] font-black uppercase tracking-widest text-[var(--danger)] flex items-center gap-2">
-                                <CheckCircle className="w-5 h-5" /> Results
-                              </h3>
-                              <button onClick={() => clearModuleCache('tutorial', module.id)} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
-                                <RotateCcw className="w-4 h-4" />
-                              </button>
-                            </div>
-
-                            <div className="max-h-[600px] overflow-y-auto pr-2 space-y-4">
-                              {tutorials[module.id].map((tut, i) => (
-                                <a
-                                  key={i}
-                                  href={tut.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="block p-5 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all group/card relative"
-                                >
-                                  <div className="flex items-start gap-4">
-                                    <div className="mt-1">
-                                      {tut.type.toLowerCase().includes('video') ? <Video className="w-5 h-5 text-[var(--danger)]" /> : (tut.type.toLowerCase().includes('interactive') ? <Globe className="w-5 h-5 text-[var(--accent)]" /> : <FileText className="w-5 h-5 text-[#ffaa00]" />)}
-                                    </div>
-                                    <div className="flex-1">
-                                      <div className="flex justify-between items-start mb-2">
-                                        <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border border-[var(--border-subtle)]">
-                                          {tut.sourcePlatform}
-                                        </span>
-                                        <ExternalLink className="w-4 h-4 text-[var(--text-tertiary)] group-hover/card:text-[var(--danger)] transition-colors" />
-                                      </div>
-                                      <h5 className="text-[15px] font-bold leading-tight mb-2 text-[var(--text-primary)] group-hover/card:text-[var(--danger)] transition-colors pr-6">
-                                        {tut.title}
-                                      </h5>
-                                      <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed italic">
-                                        &quot;{tut.aiExplanation}&quot;
-                                      </p>
-                                    </div>
-                                  </div>
-                                </a>
-                              ))}
-
-                              <button
-                                onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics, true)}
-                                disabled={loadingActionId !== null}
-                                className="mt-4 h-12 w-full rounded-xl border-2 border-dashed border-[var(--border-subtle)] text-[var(--text-tertiary)] text-[12px] font-bold flex items-center justify-center gap-2 hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-colors disabled:opacity-50"
-                              >
-                                <Search className="w-4 h-4" /> Find More
-                              </button>
-                            </div>
+                    <div className="pt-2">
+                      {loadingActionId === `tutorial-${module.id}` ? (
+                        <SkeletonLoader phase={loadingPhase} />
+                      ) : tutorials[module.id] ? (
+                        <div className="mt-2 flex flex-col gap-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <h3 className="text-[14px] font-black uppercase tracking-widest text-[var(--danger)] flex items-center gap-2">
+                              <CheckCircle className="w-5 h-5" /> Results
+                            </h3>
+                            <button onClick={() => clearModuleCache('tutorial', module.id)} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
+                              <RotateCcw className="w-4 h-4" />
+                            </button>
                           </div>
-                        ) : (
-                          <button
-                            onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics)}
-                            disabled={loadingActionId !== null}
-                            className="bg-[var(--danger)] text-white rounded-xl px-8 py-4 text-[14px] font-black tracking-wide flex items-center justify-center gap-3 hover:opacity-90 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 w-full"
-                          >
-                            <PlayCircle className="w-5 h-5" /> Find Best Resources
-                          </button>
-                        )}
-                      </div>
+
+                          <div className="max-h-[600px] overflow-y-auto pr-2 space-y-4">
+                            {tutorials[module.id].map((tut, i) => (
+                              <a
+                                key={i}
+                                href={tut.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="block p-5 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all group/card relative"
+                              >
+                                <div className="flex items-start gap-4">
+                                  <div className="mt-1">
+                                    {tut.type.toLowerCase().includes('video') ? <Video className="w-5 h-5 text-[var(--danger)]" /> : (tut.type.toLowerCase().includes('interactive') ? <Globe className="w-5 h-5 text-[var(--accent)]" /> : <FileText className="w-5 h-5 text-[#ffaa00]" />)}
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="flex justify-between items-start mb-2">
+                                      <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border border-[var(--border-subtle)]">
+                                        {tut.sourcePlatform}
+                                      </span>
+                                      <ExternalLink className="w-4 h-4 text-[var(--text-tertiary)] group-hover/card:text-[var(--danger)] transition-colors" />
+                                    </div>
+                                    <h5 className="text-[15px] font-bold leading-tight mb-2 text-[var(--text-primary)] group-hover/card:text-[var(--danger)] transition-colors pr-6">
+                                      {tut.title}
+                                    </h5>
+                                    <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed italic">
+                                      &quot;{tut.aiExplanation}&quot;
+                                    </p>
+                                  </div>
+                                </div>
+                              </a>
+                            ))}
+
+                            <button
+                              onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics, true)}
+                              disabled={loadingActionId !== null}
+                              className="mt-4 h-12 w-full rounded-xl border-2 border-dashed border-[var(--border-subtle)] text-[var(--text-tertiary)] text-[12px] font-bold flex items-center justify-center gap-2 hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-colors disabled:opacity-50"
+                            >
+                              <Search className="w-4 h-4" /> Find More
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => handleGenerateTutorials(e, module.id, module.title, module.topics)}
+                          disabled={loadingActionId !== null}
+                          className="bg-[var(--danger)] text-white rounded-xl px-8 py-4 text-[14px] font-black tracking-wide flex items-center justify-center gap-3 hover:opacity-90 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 w-full"
+                        >
+                          <PlayCircle className="w-5 h-5" /> Find Best Resources
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
 
-              </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
       </section>
     </div>
-
   );
 };
 

@@ -29,7 +29,7 @@ export async function getAvailableGeminiKey(): Promise<string> {
     process.env.GEMINI_API_KEY_3,
     process.env.GEMINI_API_KEY_4,
     // Add legacy support for previously used keys if any of the above are missing
-    process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY
+    process.env.GEMINI_API_KEY
   ].filter((key) => key !== undefined && key !== null && key.trim().length > 0) as string[];
 
   if (keys.length === 0) {

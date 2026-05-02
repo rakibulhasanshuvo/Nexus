@@ -383,6 +383,12 @@
   }
 
   /* Markdown Styles for AI Content */
+  .style-markdown {
+    overflow-x: auto;
+    max-width: 100%;
+    scrollbar-width: thin;
+  }
+  
   .style-markdown ul {
     list-style-type: disc;
     padding-left: 1.5rem;
@@ -416,6 +422,35 @@
   .style-markdown strong {
     font-weight: 700;
     color: var(--text-primary);
+  }
+
+  /* KaTeX Responsiveness Overrides */
+  .katex-display {
+    margin: 0.5em 0 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 0.5rem 0 !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+  }
+
+  .katex-display::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .katex-display::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
+  }
+
+  .katex {
+    font-size: 1.1em !important;
+  }
+
+  @media (max-width: 768px) {
+    .katex {
+      font-size: 1em !important;
+    }
   }
 
   /* Animation classes */

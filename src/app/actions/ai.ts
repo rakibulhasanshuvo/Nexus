@@ -79,7 +79,7 @@ export async function counselorChatAction(
     const response = await chat.sendMessage({ message });
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
     const groundingUrls: string[] = chunks
-      ?.map((c: {web?: {uri?: string}}) => c.web?.uri as string)
+      ?.map((c: { web?: { uri?: string } }) => c.web?.uri as string)
       ?.filter(Boolean) || [];
 
     return { text: response.text || '', groundingUrls };
@@ -135,7 +135,7 @@ export async function vivaChatAction(
 export async function generateSpeechAction(text: string, userApiKey?: string): Promise<string | undefined> {
   return await withRetry(async (ai) => {
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: AI_MODELS.DEFAULT_OPS,
       contents: [{ parts: [{ text: `Ask this viva question clearly: ${text}` }] }],
       config: {
         responseModalities: [Modality.AUDIO],
@@ -255,7 +255,8 @@ CONSTRAINTS:
 1. Focus entirely on the core concepts needed for BOU final exams.
 2. Adapt the content style to the DESIRED FORMAT STYLE (e.g. if 'Flashcard Style', structure concepts as Q&A pairs).
 3. Adapt the detail level based on the DEPTH LEVEL.
-4. You must strictly output JSON matching the required schema. If there are no relevant formulas for this topic (e.g., History), return an empty array [] for formulas.`;
+4. For all formulas/equations, you MUST use LaTeX notation (e.g., \frac{a}{b}, x^2, \sqrt{x}, \pi, \epsilon_0). This is critical for high-quality rendering.
+5. You must strictly output JSON matching the required schema. If there are no relevant formulas for this topic (e.g., History), return an empty array [] for formulas.`;
 
     if (tweakPrompt && previousData) {
       prompt += `
@@ -268,7 +269,7 @@ Please completely regenerate the JSON based on the tweak request.`;
 
     try {
       const response = await ai.models.generateContent({
-        model: AI_MODELS.DEFAULT_OPS,
+        model: AI_MODELS.COMPLEX_LOGIC,
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -295,9 +296,9 @@ Please completely regenerate the JSON based on the tweak request.`;
         }
       });
       return JSON.parse(response.text || '{}');
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to generate cheat sheet", e);
-      throw new Error("Failed to generate cheat sheet.");
+      throw new Error(e.message || "Failed to generate cheat sheet.");
     }
   }, userApiKey);
 }
@@ -323,9 +324,9 @@ CONSTRAINTS:
         contents: prompt,
       });
       return response.text || "TMA Outline generation failed.";
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to generate TMA outline", e);
-      throw new Error("Failed to generate TMA outline.");
+      throw new Error(e.message || "Failed to generate TMA outline.");
     }
   }, userApiKey);
 }
@@ -377,7 +378,7 @@ export async function findStructuredTutorialsAction(
     }
 
     // Step 2: AI Curation
-    const prompt = isLiveSearch 
+    const prompt = isLiveSearch
       ? `You are an expert university academic curator. Review these live search results. Select the 3 most authoritative and helpful links for a student studying ${unitTitle} (${courseName}). DO NOT invent links. ONLY use the provided URLs.
       
 COURSE: "${courseName}"
@@ -420,9 +421,9 @@ Return exactly 3 resources in the required JSON format.`;
         }
       });
       return JSON.parse(response.text || '[]');
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to recommend resources", e);
-      throw new Error("Failed to recommend resources.");
+      throw new Error(e.message || "Failed to recommend resources.");
     }
   }, userApiKey);
 }
@@ -450,9 +451,9 @@ export async function generateFlashcardsAction(
         config: { responseMimeType: "application/json" }
       });
       return JSON.parse(response.text || '[]');
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to generate flashcards", e);
-      throw new Error("Failed to generate flashcards.");
+      throw new Error(e.message || "Failed to generate flashcards.");
     }
   }, userApiKey);
 }

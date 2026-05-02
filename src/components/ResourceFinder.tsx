@@ -6,6 +6,8 @@ import { generateCheatSheetAction, generateTMAOutlineAction, findStructuredTutor
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { COURSE_MAPPING, COURSE_DETAILS } from '@/lib/constants';
 import { CuratedResource, CheatSheetData } from '@/lib/types';
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
 import generatePDF from 'react-to-pdf';
 import { supabase } from '@/lib/supabase';
 import { RotateCcw, Library, Search, BookOpen, Flame, PenTool, CheckCircle, ArrowRight, BookA, PlayCircle, Video, FileText, Download, Copy, Save, Send, Globe, ExternalLink } from 'lucide-react';
@@ -36,10 +38,10 @@ const ResourceFinderInner: React.FC = () => {
   // URL State Syncing
   const semesterParam = searchParams.get('semester');
   const courseParam = searchParams.get('course');
-  
+
   const [selectedSemester, setSelectedSemester] = useState<number>(semesterParam ? parseInt(semesterParam) : 0);
   const [selectedCourse, setSelectedCourse] = useState<string>(courseParam || '');
-  
+
   // Update URL function
   const updateUrlParams = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -78,7 +80,7 @@ const ResourceFinderInner: React.FC = () => {
   // UI States
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
-  
+
   // Data States (Persistent Cache for AI responses)
   const [cheatSheets, setCheatSheets] = useLocalStorage<Record<string, CheatSheetData | string>>('bou_resource_cheatsheets', {});
   const [focusAreas, setFocusAreas] = useState<string[]>(['Core Concepts', 'Formulas']);
@@ -130,13 +132,13 @@ const ResourceFinderInner: React.FC = () => {
 
   const semester = COURSE_MAPPING[selectedSemester];
   const courseDetail = COURSE_DETAILS[selectedCourse];
-  
+
   const modules = selectedCourse && courseDetail ? courseDetail.topics.map((topic, idx) => ({
     id: `${selectedCourse}-unit-${idx + 1}`,
     courseId: selectedCourse,
     unit: idx + 1,
     title: topic,
-    topics: [topic, ...(courseDetail.exam_intel || [])], 
+    topics: [topic, ...(courseDetail.exam_intel || [])],
     isHighYield: idx % 2 === 1,
     priorityScore: idx % 2 === 1 ? 95 : 65
   })) : [];
@@ -233,7 +235,7 @@ const ResourceFinderInner: React.FC = () => {
 
   return (
 
-    <div className="animate-fade-in w-full flex flex-col lg:flex-row h-[calc(100vh-80px)] overflow-hidden gap-0 bg-[var(--bg-primary)]">
+    <div className="animate-fade-in w-full flex flex-col lg:flex-row min-h-[calc(100vh-100px)] gap-0 bg-[var(--bg-primary)]">
       {/* Left Column (Sidebar) */}
       <aside className="w-full lg:w-[320px] lg:min-w-[320px] bg-[var(--bg-secondary)]/50 border-r border-[var(--border-subtle)] flex flex-col h-full overflow-y-auto z-10">
         <div className="p-6 border-b border-[var(--border-subtle)]">
@@ -289,8 +291,8 @@ const ResourceFinderInner: React.FC = () => {
                 <div
                   key={module.id}
                   onClick={() => {
-                     setSelectedModuleId(module.id);
-                     if (!activeTool) setActiveTool('tma');
+                    setSelectedModuleId(module.id);
+                    if (!activeTool) setActiveTool('tma');
                   }}
                   className={`p-3 rounded-xl border cursor-pointer transition-all group flex items-start gap-3 ${selectedModuleId === module.id ? 'bg-[var(--bg-tertiary)] border-[var(--text-primary)]/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-[var(--bg-tertiary)]/50 hover:border-[var(--border-subtle)]'}`}
                 >
@@ -306,8 +308,8 @@ const ResourceFinderInner: React.FC = () => {
                       Unit {module.unit}: {module.title}
                     </p>
                     <p className="text-[10px] font-medium text-[var(--text-tertiary)] mt-1 flex items-center gap-2">
-                       {module.isHighYield && <span className="text-[var(--danger)] flex items-center gap-0.5"><Flame className="w-3 h-3" /> High-Yield</span>}
-                       Target Unit
+                      {module.isHighYield && <span className="text-[var(--danger)] flex items-center gap-0.5"><Flame className="w-3 h-3" /> High-Yield</span>}
+                      Target Unit
                     </p>
                   </div>
                 </div>
@@ -334,7 +336,7 @@ const ResourceFinderInner: React.FC = () => {
               <Search className="w-10 h-10 text-[var(--text-tertiary)]/30" />
             </div>
             <h3 className="text-[18px] lg:text-[24px] font-black text-[var(--text-primary)] uppercase tracking-[0.3em] mb-4 text-center z-10 leading-tight">
-              Select Course to <br/> Unlock Syllabus Vault
+              Select Course to <br /> Unlock Syllabus Vault
             </h3>
             <p className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest max-w-md text-center leading-relaxed z-10">
               Load a course to view official BOU modules, high-yield PYQ exam tags, and instantly generate assignment outlines or study cheat sheets.
@@ -342,7 +344,7 @@ const ResourceFinderInner: React.FC = () => {
           </div>
         ) : (
           /* Workspace Content */
-          <div className="flex-1 overflow-y-auto flex flex-col">
+          <div className="flex-1 overflow-hidden flex flex-col">
             {/* Tool Tabs Navbar */}
             <div className="sticky top-0 z-30 bg-[var(--bg-primary)]/80 backdrop-blur-xl border-b border-[var(--border-subtle)] px-8 py-4 flex items-center justify-center sm:justify-start gap-4 sm:gap-8">
               <button
@@ -366,9 +368,9 @@ const ResourceFinderInner: React.FC = () => {
             </div>
 
             {/* Active Tool Content */}
-            <div className="flex-1 p-6 md:p-10 lg:p-12 overflow-y-auto">
+            <div className="flex-1 p-6 md:p-10 lg:p-12 overflow-y-auto pb-32 apple-scrollbar">
               <div className="max-w-full mx-auto">
-                 {/* This is where the tool content goes. I'll replace it with a marker for now to inject the rest of the code. */}
+                {/* This is where the tool content goes. I'll replace it with a marker for now to inject the rest of the code. */}
 
                 {activeTool === 'tma' && modules.filter(m => m.id === selectedModuleId).map(module => (
                   <div key={module.id} className="animate-fade-in space-y-8">
@@ -408,35 +410,35 @@ const ResourceFinderInner: React.FC = () => {
 
                       {/* Primary Action Button Area */}
                       <div className="flex justify-end border-t border-[var(--border-subtle)] pt-6 mt-6">
-                         {loadingActionId === `tma-${module.id}` ? (
-                            <SkeletonLoader />
-                         ) : (
-                            <button
-                              onClick={(e) => handleGenerateTMAOutline(e, module.id, module.title)}
-                              disabled={loadingActionId !== null}
-                              className="bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl px-8 py-4 text-[14px] font-black tracking-wide flex items-center gap-3 hover:opacity-90 transition-all shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:shadow-[0_6px_16px_rgba(255,255,255,0.15)] active:scale-[0.98] disabled:opacity-50"
-                            >
-                              <ArrowRight className="w-5 h-5" /> Architect TMA Answer
-                            </button>
-                         )}
+                        {loadingActionId === `tma-${module.id}` ? (
+                          <SkeletonLoader />
+                        ) : (
+                          <button
+                            onClick={(e) => handleGenerateTMAOutline(e, module.id, module.title)}
+                            disabled={loadingActionId !== null}
+                            className="bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl px-8 py-4 text-[14px] font-black tracking-wide flex items-center gap-3 hover:opacity-90 transition-all shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:shadow-[0_6px_16px_rgba(255,255,255,0.15)] active:scale-[0.98] disabled:opacity-50"
+                          >
+                            <ArrowRight className="w-5 h-5" /> Architect TMA Answer
+                          </button>
+                        )}
                       </div>
                     </div>
 
                     {/* Result Area */}
                     {tmaOutlines[module.id] && (
-                       <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--accent)]/30 p-8 shadow-lg relative">
-                         <div className="absolute top-4 right-4 flex items-center gap-2">
-                           <button onClick={() => clearModuleCache('tma', module.id)} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
-                             <RotateCcw className="w-4 h-4" />
-                           </button>
-                         </div>
-                         <h3 className="text-[14px] font-black uppercase tracking-widest text-[var(--accent)] mb-6 flex items-center gap-2">
-                            <CheckCircle className="w-5 h-5" /> Generated Outline
-                         </h3>
-                         <div className="style-markdown text-[var(--text-primary)] max-h-[800px] overflow-y-auto pr-4">
-                           <ReactMarkdown>{tmaOutlines[module.id]}</ReactMarkdown>
-                         </div>
-                       </div>
+                      <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--accent)]/30 p-8 shadow-lg relative">
+                        <div className="absolute top-4 right-4 flex items-center gap-2">
+                          <button onClick={() => clearModuleCache('tma', module.id)} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
+                            <RotateCcw className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <h3 className="text-[14px] font-black uppercase tracking-widest text-[var(--accent)] mb-6 flex items-center gap-2">
+                          <CheckCircle className="w-5 h-5" /> Generated Outline
+                        </h3>
+                        <div className="style-markdown text-[var(--text-primary)] max-h-[800px] overflow-y-auto pr-4">
+                          <ReactMarkdown>{tmaOutlines[module.id]}</ReactMarkdown>
+                        </div>
+                      </div>
                     )}
 
                     {/* Bento Grid */}
@@ -528,9 +530,9 @@ const ResourceFinderInner: React.FC = () => {
                       <div className="flex justify-end pt-2">
                         {loadingActionId === `cheat-${module.id}` ? (
                           <div className="w-full space-y-4">
-                             <div className="h-8 bg-[var(--bg-tertiary)] rounded animate-pulse w-1/3"></div>
-                             <div className="h-24 bg-[var(--bg-tertiary)] rounded-xl animate-pulse"></div>
-                             <div className="h-24 bg-[var(--bg-tertiary)] rounded-xl animate-pulse"></div>
+                            <div className="h-8 bg-[var(--bg-tertiary)] rounded animate-pulse w-1/3"></div>
+                            <div className="h-24 bg-[var(--bg-tertiary)] rounded-xl animate-pulse"></div>
+                            <div className="h-24 bg-[var(--bg-tertiary)] rounded-xl animate-pulse"></div>
                           </div>
                         ) : cheatSheets[module.id] ? null : (
 
@@ -622,11 +624,18 @@ const ResourceFinderInner: React.FC = () => {
                             {(cheatSheets[module.id] as CheatSheetData).formulas.length > 0 && (
                               <div>
                                 <h3 className="text-[12px] font-black uppercase tracking-widest text-[var(--accent)] mb-3">Key Formulas</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                   {(cheatSheets[module.id] as CheatSheetData).formulas.map((formula, idx) => (
-                                    <div key={idx} className="bg-[var(--bg-secondary)] p-4 rounded-xl border border-[var(--border-subtle)]">
-                                      <div className="text-[12px] font-bold text-[var(--text-tertiary)] mb-2">{formula.name}</div>
-                                      <code className="text-[15px] font-mono text-[var(--accent)] bg-[var(--bg-primary)] px-2 py-1 rounded block overflow-x-auto">{formula.equation}</code>
+                                    <div key={idx} className="bg-[var(--bg-secondary)] p-6 rounded-2xl border border-[var(--border-subtle)] shadow-sm hover:shadow-md transition-shadow group flex flex-col">
+                                      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-tertiary)] mb-4 opacity-70 group-hover:text-[var(--accent)] transition-colors leading-relaxed">
+                                        {formula.name}
+                                      </div>
+                                      <div className="flex items-center justify-center bg-[var(--bg-primary)] p-4 md:p-8 rounded-xl border border-[var(--border-subtle)]/50 relative overflow-x-auto min-h-[140px] scrollbar-thin">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                        <div className="text-[18px] md:text-[22px] text-[var(--accent)] relative z-10 w-full text-center flex justify-center">
+                                          <BlockMath math={formula.equation} />
+                                        </div>
+                                      </div>
                                     </div>
                                   ))}
                                 </div>

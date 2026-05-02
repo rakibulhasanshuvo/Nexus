@@ -211,7 +211,7 @@ const ChatBot: React.FC = () => {
                   <Bot className="w-4.5 h-4.5 text-[var(--bg-primary)]" />
                 </div>
               )}
-              <div className={`max-w-[80%] overflow-hidden ${
+              <div className={`max-w-[85%] overflow-x-auto overflow-y-hidden ${
                 msg.role === 'user'
                   ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-3xl rounded-tr-sm px-5 py-3.5 shadow-[var(--card-shadow)]'
                   : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-3xl rounded-tl-sm px-6 py-4 border border-[var(--border-subtle)] shadow-sm'

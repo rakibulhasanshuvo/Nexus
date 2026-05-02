@@ -134,7 +134,13 @@ export async function parseSearchIntent(params: SearchParams): Promise<{ youtube
 
     const prompt = `
       Analyze the following user query and generate two optimized search queries.
-      One for YouTube (focusing on video tutorials, lectures) and one for Web Search (focusing on articles, documentation, pdfs).
+      One for YouTube (focusing on video tutorials, lectures) and one for Web Search (focusing on free articles, documentation, pdfs).
+
+      CRITICAL REQUIREMENTS:
+      1. EXCLUDE paid platforms like Coursera, Udemy, edX, or Skillshare.
+      2. PRIORITIZE free platforms like YouTube, Khan Academy, GeeksforGeeks, W3Schools, and MIT OpenCourseWare.
+      3. For the web query, explicitly append negative keywords to filter paid sites (e.g., "-site:coursera.org -site:udemy.com").
+
       Return ONLY a valid JSON object with keys "youtubeQuery" and "webQuery".
 
       User Query: "${params.query}"
@@ -196,8 +202,15 @@ export async function performUnifiedSearch(params: SearchParams): Promise<Search
     const ai = getGenAIClient(apiKey);
 
     const formattingPrompt = `
-      You are an AI assistant. Format and refine the following raw search results into a clean, concise, and structured format.
-      Keep the JSON array structure. Fix any typos in titles and summarize descriptions if they are too long.
+      You are an AI assistant specialized in educational resource discovery. 
+      Format and refine the following raw search results into a clean, concise, and structured format.
+
+      FILTERING RULES:
+      1. STRICTLY EXCLUDE any results from paid platforms (Coursera, Udemy, edX, etc.) or sites requiring a subscription.
+      2. REMOVE results that are just "Course Previews" or "Promotional" content.
+      3. PRIORITIZE free, high-quality academic resources, open-source documentation, and YouTube tutorials.
+      4. Fix any typos in titles and summarize descriptions to be concise (max 150 chars).
+
       Return ONLY a valid JSON array of objects.
 
       Raw Results:

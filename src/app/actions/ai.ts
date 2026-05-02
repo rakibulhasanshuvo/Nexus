@@ -1,6 +1,5 @@
 "use server";
 import { AI_MODELS } from "@/lib/ai-config";
-import { cookies } from "next/headers";
 import { GoogleGenAI, Type, Schema, Modality } from "@google/genai";
 import { StructuredTutorial, ExamRoutineItem } from "@/lib/types";
 
@@ -16,55 +15,19 @@ Rules:
 7. Resource Finder Logic: Use STRICT_FREE_ONLY filter. Prioritize high-retention English YouTube channels (Neso Academy, Gate Smashers, FreeCodeCamp) and MIT OCW/LibreTexts for Physics.
 `;
 
+import { getAvailableGeminiKey } from "@/lib/env";
+
 // Fallback logic
 async function withRetry<T>(operation: (ai: GoogleGenAI) => Promise<T>, userApiKey?: string): Promise<T> {
-  const availableKeys = [
-    process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY,
-    process.env.GEMINI_API_KEY_2,
-    process.env.GEMINI_API_KEY_3
-  ].filter(Boolean) as string[];
+  // If user passed a key directly via function args, use it. Otherwise, use the load balancer which checks cookies then env.
+  const resolvedKey = userApiKey || await getAvailableGeminiKey();
 
-  // Priority 1: User-provided key via HttpOnly cookie (Secure)
-  const cookieStore = await cookies();
-  const cookieKey = cookieStore.get("bou_user_api_key")?.value;
-
-  const finalApiKey = cookieKey || userApiKey;
-
-  if (finalApiKey) {
-    const ai = new GoogleGenAI({ apiKey: finalApiKey });
-    return await operation(ai);
+  if (!resolvedKey) {
+    throw new Error("No Gemini API key available. Please configure one in Settings.");
   }
 
-  if (availableKeys.length === 0) {
-    throw new Error("No GEMINI_API_KEY is defined in environment variables.");
-  }
-
-  let lastError: Error | undefined;
-
-  for (let i = 0; i < availableKeys.length; i++) {
-    try {
-      const ai = new GoogleGenAI({ apiKey: availableKeys[i] });
-      return await operation(ai);
-    } catch (error: unknown) {
-      lastError = error as Error;
-      const errObj = error as Record<string, unknown>;
-      // Check if it's a rate limit or quota issue
-      if (
-        errObj?.status === 429 ||
-        errObj?.status === 503 ||
-        String(errObj?.message).includes('429') ||
-        String(errObj?.message).includes('503') ||
-        String(errObj?.message).includes('exhausted') ||
-        String(errObj?.message).includes('quota')
-      ) {
-        console.warn(`API key ${i + 1} failed with rate limit/quota, trying next key...`);
-        continue;
-      }
-      throw error;
-    }
-  }
-
-  throw lastError;
+  const ai = new GoogleGenAI({ apiKey: resolvedKey });
+  return await operation(ai);
 }
 
 // ==========================================

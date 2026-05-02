@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 
 /**
@@ -19,6 +19,7 @@ export function useSyncedData<T>(
 ) {
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [isInitializing, setIsInitializing] = useState(true);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize value from Supabase or localStorage on mount
   useEffect(() => {

@@ -5,10 +5,10 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { generateCheatSheetAction, generateTMAOutlineAction, findStructuredTutorialsAction } from '@/app/actions/ai';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { COURSE_MAPPING, COURSE_DETAILS } from '@/lib/constants';
-import { StructuredTutorial, CheatSheetData } from '@/lib/types';
+import { CuratedResource, CheatSheetData } from '@/lib/types';
 import generatePDF from 'react-to-pdf';
 import { supabase } from '@/lib/supabase';
-import { RotateCcw, Library, Search, BookOpen, Flame, PenTool, CheckCircle, ArrowRight, BookA, PlayCircle, Video, FileText, Download, Copy, Save, Send } from 'lucide-react';
+import { RotateCcw, Library, Search, BookOpen, Flame, PenTool, CheckCircle, ArrowRight, BookA, PlayCircle, Video, FileText, Download, Copy, Save, Send, Globe, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 
@@ -144,6 +144,20 @@ const ResourceFinderInner: React.FC = () => {
 
   const getDepthString = (level: number) => level === 1 ? 'Quick Skim' : level === 2 ? 'Standard' : 'Deep Dive';
 
+
+  // Handle artificial loading phase transition for tutorials
+  useEffect(() => {
+    let timerId: NodeJS.Timeout;
+    if (loadingActionId && loadingActionId.startsWith('tutorial-')) {
+      timerId = setTimeout(() => {
+        setLoadingPhase('AI is curating the best links...');
+      }, 1500);
+    }
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [loadingActionId]);
+
   const handleGenerateCheatSheet = async (e: React.MouseEvent | unknown, moduleId: string, unitTitle: string, topics: string[], isTweak = false) => {
     if (e && typeof (e as any).stopPropagation === "function") { (e as any).stopPropagation(); }
     if (cheatSheets[moduleId] && !isTweak) return;
@@ -202,11 +216,6 @@ const ResourceFinderInner: React.FC = () => {
     setLoadingActionId(`tutorial-${moduleId}`);
     setLoadingPhase('Scanning the web via Tavily...');
 
-    // Mock transition to curating phase after 1.5 seconds
-    const timerId = setTimeout(() => {
-      setLoadingPhase('AI is curating the best links...');
-    }, 1500);
-
     try {
       const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
       const pref = tutorialPref[moduleId] || "Best Bangla Tutorials from any platform";
@@ -217,7 +226,6 @@ const ResourceFinderInner: React.FC = () => {
     } catch (err) {
       console.error(err);
     } finally {
-      clearTimeout(timerId);
       setLoadingActionId(null);
       setLoadingPhase('');
     }

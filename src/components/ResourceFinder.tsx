@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { generateCheatSheetAction, generateTMAOutlineAction, findStructuredTutorialsAction } from '@/app/actions/ai';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { COURSE_MAPPING, COURSE_DETAILS } from '@/lib/constants';
+import { COURSE_MAPPING, COURSE_DETAILS, STATIC_RESOURCES } from '@/lib/constants';
 import { CuratedResource, CheatSheetData } from '@/lib/types';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
@@ -688,10 +688,54 @@ const ResourceFinderInner: React.FC = () => {
                       <p className="text-sm font-medium text-[var(--text-tertiary)]">Discover the best external tutorials, videos, and articles for this specific unit.</p>
                     </div>
 
+                    {/* Verified Static Resources Section */}
+                    {STATIC_RESOURCES.filter(r => r.courseId === selectedCourse).length > 0 && (
+                      <div className="bg-[var(--bg-secondary)]/80 backdrop-blur-xl border border-[var(--border-subtle)] rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--accent)] to-transparent"></div>
+                        <div className="mb-6 flex items-center justify-between">
+                          <h3 className="text-[12px] font-black uppercase tracking-widest text-[var(--accent)] flex items-center gap-2">
+                            <CheckCircle className="w-5 h-5" /> Verified Academic Resources
+                          </h3>
+                          <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest px-2 py-1 rounded bg-[var(--bg-tertiary)]">Hand-Curated</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {STATIC_RESOURCES.filter(r => r.courseId === selectedCourse).map(res => (
+                            <a
+                              key={res.id}
+                              href={res.direct_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-4 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] hover:border-[var(--accent)]/50 transition-all group shadow-sm"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20">
+                                      {res.type}
+                                    </span>
+                                    <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-tertiary)]">
+                                      {res.badge}
+                                    </span>
+                                  </div>
+                                  <p className="text-[14px] font-bold text-[var(--text-primary)] leading-tight group-hover:text-[var(--accent)] transition-colors line-clamp-2">{res.title}</p>
+                                  <p className="text-[11px] text-[var(--text-tertiary)] mt-1">{res.source_name}</p>
+                                </div>
+                                <ExternalLink className="w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--accent)] shrink-0 mt-1" />
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="bg-[var(--bg-secondary)]/80 backdrop-blur-xl border border-[var(--border-subtle)] rounded-2xl p-6 shadow-xl relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--danger)] to-transparent"></div>
-
-                      <div className="mb-6">
+                      <div className="mb-6 flex items-center justify-between">
+                        <h3 className="text-[12px] font-black uppercase tracking-widest text-[var(--danger)] flex items-center gap-2">
+                          <Search className="w-5 h-5" /> AI Discovery Engine
+                        </h3>
+                        <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest px-2 py-1 rounded bg-[var(--bg-tertiary)]">Live Search</span>
+                      </div>
                         <label className="block text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-3">Resource Preference</label>
                         <select
                           value={tutorialPref[module.id] || "Best Bangla Tutorials from any platform"}

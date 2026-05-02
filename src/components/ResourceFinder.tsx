@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { generateCheatSheetAction, generateTMAOutlineAction, findStructuredTutorialsAction } from '@/app/actions/ai';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { COURSE_MAPPING, COURSE_DETAILS } from '@/lib/constants';
-import { StructuredTutorial } from '@/lib/types';
-import { RotateCcw, Library, Search, BookOpen, Flame, PenTool, CheckCircle, ArrowRight, BookA, PlayCircle, Video, FileText } from 'lucide-react';
+import { StructuredTutorial, CheatSheetData } from '@/lib/types';
+import generatePDF from 'react-to-pdf';
+import { supabase } from '@/lib/supabase';
+import { RotateCcw, Library, Search, BookOpen, Flame, PenTool, CheckCircle, ArrowRight, BookA, PlayCircle, Video, FileText, Download, Copy, Save, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 
@@ -72,11 +74,29 @@ const ResourceFinderInner: React.FC = () => {
   const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
   
   // Data States (Persistent Cache for AI responses)
-  const [cheatSheets, setCheatSheets] = useLocalStorage<Record<string, string>>('bou_resource_cheatsheets', {});
+  const [cheatSheets, setCheatSheets] = useLocalStorage<Record<string, CheatSheetData | string>>('bou_resource_cheatsheets', {});
+  const [focusAreas, setFocusAreas] = useState<string[]>(['Core Concepts', 'Formulas']);
+  const [formatStyle, setFormatStyle] = useState<string>('Bullet Points');
+  const [depthLevel, setDepthLevel] = useState<number>(2);
+  const [tweakPrompt, setTweakPrompt] = useState<string>('');
   const [tmaOutlines, setTmaOutlines] = useLocalStorage<Record<string, string>>('bou_resource_tma_outlines', {});
   const [userContexts, setUserContexts] = useLocalStorage<Record<string, string>>('bou_resource_user_contexts', {});
   const [tutorials, setTutorials] = useLocalStorage<Record<string, StructuredTutorial[]>>('bou_resource_tutorials', {});
   const [tutorialPref, setTutorialPref] = useLocalStorage<Record<string, string>>('bou_resource_tutorial_prefs', {});
+
+  useEffect(() => {
+    // Migrate old string cheat sheets
+    let migrated = false;
+    const next = { ...cheatSheets };
+    Object.keys(next).forEach(key => {
+      if (typeof next[key] === 'string') {
+        delete next[key];
+        migrated = true;
+      }
+    });
+    if (migrated) setCheatSheets(next);
+  }, []);
+
   const [activeTool, setActiveTool] = useState<'cheat' | 'tma' | 'tutorial' | null>(null);
 
 
@@ -114,22 +134,42 @@ const ResourceFinderInner: React.FC = () => {
     priorityScore: idx % 2 === 1 ? 95 : 65
   })) : [];
 
-  const handleGenerateCheatSheet = async (e: React.MouseEvent, moduleId: string, unitTitle: string, topics: string[]) => {
-    e.stopPropagation();
-    if (cheatSheets[moduleId]) return;
+
+  const getDepthString = (level: number) => level === 1 ? 'Quick Skim' : level === 2 ? 'Standard' : 'Deep Dive';
+
+  const handleGenerateCheatSheet = async (e: React.MouseEvent | unknown, moduleId: string, unitTitle: string, topics: string[], isTweak = false) => {
+    if (e && typeof (e as any).stopPropagation === "function") { (e as any).stopPropagation(); }
+    if (cheatSheets[moduleId] && !isTweak) return;
     setLoadingActionId(`cheat-${moduleId}`);
     try {
       const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
-      // Using Secure Next.js Server Action
-      const result = await generateCheatSheetAction(courseName, unitTitle, topics);
-      setCheatSheets(prev => ({ ...prev, [moduleId]: result }));
+
+      const previousData = isTweak ? cheatSheets[moduleId] : undefined;
+      const currentTweak = isTweak ? tweakPrompt : undefined;
+
+      const result = await generateCheatSheetAction(
+        courseName,
+        unitTitle,
+        topics,
+        focusAreas.length > 0 ? focusAreas : ['General Overview'],
+        formatStyle,
+        getDepthString(depthLevel),
+        undefined,
+        currentTweak,
+        previousData
+      );
+
+      setCheatSheets(prev => ({ ...prev, [moduleId]: result as CheatSheetData }));
       setSelectedModuleId(moduleId);
-    } catch (err) {
-      console.error(err);
+      if (isTweak) setTweakPrompt('');
+    } catch (error) {
+      console.error(error);
+      alert('Failed to generate. Please ensure your API key is valid.');
     } finally {
       setLoadingActionId(null);
     }
   };
+
 
   const handleGenerateTMAOutline = async (e: React.MouseEvent, moduleId: string, unitTitle: string) => {
     e.stopPropagation();
@@ -173,7 +213,7 @@ const ResourceFinderInner: React.FC = () => {
       {/* Left Column (Sidebar) */}
       <aside className="w-full lg:w-[320px] lg:min-w-[320px] bg-[var(--bg-secondary)]/50 border-r border-[var(--border-subtle)] flex flex-col h-full overflow-y-auto z-10">
         <div className="p-6 border-b border-[var(--border-subtle)]">
-          <h2 className="text-xl font-bold tracking-tight text-[var(--text-primary)] mb-6">Assignment Context</h2>
+          <h2 className="text-xl font-bold tracking-tight text-[var(--text-primary)] mb-6">Study Context</h2>
 
           <div className="space-y-4">
             {/* Term Selector */}
@@ -380,7 +420,7 @@ const ResourceFinderInner: React.FC = () => {
                       <div className="col-span-1 bg-[var(--bg-secondary)] rounded-2xl p-6 border border-[var(--border-subtle)] hover:border-[var(--accent)]/40 transition-colors">
                         <Flame className="w-6 h-6 text-[var(--accent)] mb-3" />
                         <h4 className="text-[14px] font-bold text-[var(--text-primary)] mb-2">Context is Key</h4>
-                        <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed">Ensure you've selected the correct academic term and unit in the sidebar for accurate references.</p>
+                        <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed">Ensure you&apos;ve selected the correct academic term and unit in the sidebar for accurate references.</p>
                       </div>
                       <div className="col-span-1 md:col-span-2 bg-[var(--bg-secondary)] rounded-2xl p-6 border border-[var(--border-subtle)] flex flex-col md:flex-row items-start md:items-center gap-6 relative overflow-hidden">
                         <div className="absolute right-[-20px] bottom-[-20px] opacity-5">
@@ -407,12 +447,71 @@ const ResourceFinderInner: React.FC = () => {
 
                     <div className="bg-[var(--bg-secondary)]/80 backdrop-blur-xl border border-[var(--border-subtle)] rounded-2xl p-6 shadow-xl relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#ffaa00] to-transparent"></div>
+
+                      {/* Configuration Controls */}
+                      {!cheatSheets[module.id] && loadingActionId !== `cheat-${module.id}` && (
+                        <div className="mb-8 space-y-6">
+                          <div>
+                            <label className="block text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-3">Focus Areas</label>
+                            <div className="flex flex-wrap gap-2">
+                              {['Formulas', 'Core Concepts', 'Common Mistakes', 'Step-by-Step Problems'].map(area => (
+                                <button
+                                  key={area}
+                                  onClick={() => setFocusAreas(prev => prev.includes(area) ? prev.filter(a => a !== area) : [...prev, area])}
+                                  className={`px-4 py-2 rounded-full text-[12px] font-bold transition-all ${focusAreas.includes(area) ? 'bg-[#ffaa00] text-black shadow-md' : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                                >
+                                  {area}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-3">Format Style</label>
+                              <select
+                                value={formatStyle}
+                                onChange={(e) => setFormatStyle(e.target.value)}
+                                className="w-full h-12 px-4 rounded-xl text-[13px] font-bold text-[var(--text-primary)] bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] focus:outline-none focus:border-[#ffaa00]/50 appearance-none cursor-pointer"
+                              >
+                                <option value="Bullet Points">Bullet Points</option>
+                                <option value="Flashcard Style">Flashcard Style</option>
+                                <option value="Executive Summary">Executive Summary</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-3 flex justify-between">
+                                <span>Depth</span>
+                                <span className="text-[#ffaa00]">
+                                  {depthLevel === 1 ? 'Quick Skim' : depthLevel === 2 ? 'Standard' : 'Deep Dive'}
+                                </span>
+                              </label>
+                              <input
+                                type="range"
+                                min="1"
+                                max="3"
+                                step="1"
+                                value={depthLevel}
+                                onChange={(e) => setDepthLevel(parseInt(e.target.value))}
+                                className="w-full accent-[#ffaa00] cursor-pointer"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="flex justify-end pt-2">
                         {loadingActionId === `cheat-${module.id}` ? (
-                          <SkeletonLoader />
+                          <div className="w-full space-y-4">
+                             <div className="h-8 bg-[var(--bg-tertiary)] rounded animate-pulse w-1/3"></div>
+                             <div className="h-24 bg-[var(--bg-tertiary)] rounded-xl animate-pulse"></div>
+                             <div className="h-24 bg-[var(--bg-tertiary)] rounded-xl animate-pulse"></div>
+                          </div>
                         ) : cheatSheets[module.id] ? null : (
+
                           <button
-                            onClick={(e) => handleGenerateCheatSheet(e, module.id, module.title, module.topics)}
+                            onClick={(e) => handleGenerateCheatSheet(e, module.id, module.title, module.topics, false)}
                             disabled={loadingActionId !== null}
                             className="bg-[#ffaa00] text-black rounded-xl px-8 py-4 text-[14px] font-black tracking-wide flex items-center gap-3 hover:opacity-90 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 w-full justify-center"
                           >
@@ -422,18 +521,126 @@ const ResourceFinderInner: React.FC = () => {
                       </div>
 
                       {/* Result Area */}
-                      {cheatSheets[module.id] && (
-                        <div className="mt-4">
+                      {cheatSheets[module.id] && typeof cheatSheets[module.id] !== 'string' && (
+                        <div className="mt-4 animate-fade-in">
                           <div className="flex items-center justify-between mb-6">
                             <h3 className="text-[14px] font-black uppercase tracking-widest text-[#ffaa00] flex items-center gap-2">
-                              <CheckCircle className="w-5 h-5" /> 1-Page Summary
+                              <CheckCircle className="w-5 h-5" /> Summary Generated
                             </h3>
-                            <button onClick={() => clearModuleCache('cheat', module.id)} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
-                              <RotateCcw className="w-4 h-4" />
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  generatePDF(() => document.getElementById(`cheat-sheet-${module.id}`), {
+                                    filename: `${module.title}_Summary.pdf`
+                                  });
+                                }}
+                                className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-tertiary)] hover:text-[#ffaa00]"
+                                title="Download PDF"
+                              >
+                                <Download className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const data = cheatSheets[module.id] as CheatSheetData;
+                                  const text = `# ${data.title}\n\n## Core Concepts\n${data.coreConcepts.map(c => '- ' + c).join('\n')}\n\n## Formulas\n${data.formulas.map(f => '- ' + f.name + ': ' + f.equation).join('\n')}\n\n## Pro Tips\n${data.proTips.map(p => '- ' + p).join('\n')}`;
+                                  navigator.clipboard.writeText(text);
+                                  alert('Copied to clipboard!');
+                                }}
+                                className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-tertiary)] hover:text-[#ffaa00]"
+                                title="Copy to Clipboard"
+                              >
+                                <Copy className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!supabase) return alert('Database not connected');
+                                  const { data: userData } = await supabase.auth.getUser();
+                                  if (!userData.user) return alert('Please login to save.');
+
+                                  const { error } = await supabase.from('saved_summaries').insert({
+                                    user_id: userData.user.id,
+                                    module_id: module.id,
+                                    course_id: selectedCourse,
+                                    content: cheatSheets[module.id]
+                                  });
+
+                                  if (error) alert('Error saving: ' + error.message);
+                                  else alert('Saved successfully!');
+                                }}
+                                className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-tertiary)] hover:text-[#ffaa00]"
+                                title="Save to History"
+                              >
+                                <Save className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => clearModuleCache('cheat', module.id)} className="p-2 hover:bg-[var(--bg-tertiary)] rounded-full transition-colors text-[var(--text-tertiary)] hover:text-[var(--danger)]" title="Clear">
+                                <RotateCcw className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
-                          <div className="style-markdown text-[var(--text-primary)] max-h-[800px] overflow-y-auto pr-4">
-                            <ReactMarkdown>{cheatSheets[module.id]}</ReactMarkdown>
+
+                          <div id={`cheat-sheet-${module.id}`} className="bg-[var(--bg-primary)] p-6 rounded-xl border border-[var(--border-subtle)] space-y-6 max-h-[600px] overflow-y-auto">
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)]">{(cheatSheets[module.id] as CheatSheetData).title}</h2>
+
+                            {/* Core Concepts */}
+                            <div>
+                              <h3 className="text-[12px] font-black uppercase tracking-widest text-[#ffaa00] mb-3">Core Concepts</h3>
+                              <ul className="space-y-3">
+                                {(cheatSheets[module.id] as CheatSheetData).coreConcepts.map((concept, idx) => (
+                                  <li key={idx} className="flex gap-3 text-[14px] text-[var(--text-secondary)]">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-[#ffaa00] shrink-0 mt-2"></div>
+                                    <div className="style-markdown"><ReactMarkdown>{concept}</ReactMarkdown></div>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            {/* Formulas */}
+                            {(cheatSheets[module.id] as CheatSheetData).formulas.length > 0 && (
+                              <div>
+                                <h3 className="text-[12px] font-black uppercase tracking-widest text-[var(--accent)] mb-3">Key Formulas</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {(cheatSheets[module.id] as CheatSheetData).formulas.map((formula, idx) => (
+                                    <div key={idx} className="bg-[var(--bg-secondary)] p-4 rounded-xl border border-[var(--border-subtle)]">
+                                      <div className="text-[12px] font-bold text-[var(--text-tertiary)] mb-2">{formula.name}</div>
+                                      <code className="text-[15px] font-mono text-[var(--accent)] bg-[var(--bg-primary)] px-2 py-1 rounded block overflow-x-auto">{formula.equation}</code>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Pro Tips */}
+                            {(cheatSheets[module.id] as CheatSheetData).proTips.length > 0 && (
+                              <div>
+                                <h3 className="text-[12px] font-black uppercase tracking-widest text-[var(--danger)] mb-3">Pro Tips</h3>
+                                <div className="space-y-3">
+                                  {(cheatSheets[module.id] as CheatSheetData).proTips.map((tip, idx) => (
+                                    <div key={idx} className="bg-[var(--danger)]/10 border border-[var(--danger)]/20 p-4 rounded-xl text-[14px] text-[var(--text-primary)]">
+                                      <div className="style-markdown"><ReactMarkdown>{tip}</ReactMarkdown></div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Tweak Bar */}
+                          <div className="mt-4 flex gap-2">
+                            <input
+                              type="text"
+                              value={tweakPrompt}
+                              onChange={(e) => setTweakPrompt(e.target.value)}
+                              placeholder="e.g. Expand more on Kirchhoff&apos;s laws..."
+                              className="flex-1 h-12 px-4 rounded-xl text-[13px] bg-[var(--bg-primary)] border border-[var(--border-subtle)] focus:outline-none focus:border-[#ffaa00]/50 text-[var(--text-primary)]"
+                              onKeyDown={(e) => e.key === 'Enter' && tweakPrompt.trim() && handleGenerateCheatSheet(e as unknown as React.MouseEvent, module.id, module.title, module.topics, true)}
+                            />
+                            <button
+                              onClick={(e) => handleGenerateCheatSheet(e, module.id, module.title, module.topics, true)}
+                              disabled={!tweakPrompt.trim() || loadingActionId !== null}
+                              className="h-12 w-12 flex items-center justify-center rounded-xl bg-[#ffaa00] text-black hover:opacity-90 disabled:opacity-50 transition-colors"
+                            >
+                              <Send className="w-5 h-5" />
+                            </button>
                           </div>
                         </div>
                       )}

@@ -5,10 +5,10 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { generateCheatSheetAction, generateTMAOutlineAction, findStructuredTutorialsAction } from '@/app/actions/ai';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { COURSE_MAPPING, COURSE_DETAILS } from '@/lib/constants';
-import { StructuredTutorial, CheatSheetData } from '@/lib/types';
+import { CuratedResource, CheatSheetData } from '@/lib/types';
 import generatePDF from 'react-to-pdf';
 import { supabase } from '@/lib/supabase';
-import { RotateCcw, Library, Search, BookOpen, Flame, PenTool, CheckCircle, ArrowRight, BookA, PlayCircle, Video, FileText, Download, Copy, Save, Send } from 'lucide-react';
+import { RotateCcw, Library, Search, BookOpen, Flame, PenTool, CheckCircle, ArrowRight, BookA, PlayCircle, Video, FileText, Download, Copy, Save, Send, Globe, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 

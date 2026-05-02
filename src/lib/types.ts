@@ -98,12 +98,10 @@ export interface TMAOutline {
   outlineMarkdown: string;
 }
 
-export interface StructuredTutorial {
+export interface CuratedResource {
   title: string;
-  provider: string;
-  reason: string;
-  type: 'video' | 'article' | 'interactive';
-  language: 'Bangla' | 'English' | 'Hindi' | string;
-  searchQuery: string;
-  url?: string;
+  url: string;
+  sourcePlatform: string;
+  type: string;
+  aiExplanation: string;
 }

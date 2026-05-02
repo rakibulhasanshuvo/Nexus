@@ -340,50 +340,62 @@ export async function findStructuredTutorialsAction(
   return await withRetry(async (ai) => {
     // Step 1: Live Search via Tavily API
     const tavilyQuery = `${courseName} ${unitTitle} ${topics.join(' ')} ${preference}`;
-    // If preference strictly implies video tutorials, we could potentially route to YouTube Data API here in the future.
+    const tavilyKey = process.env.TAVILY_API_KEY;
 
     let searchContext = "";
-    try {
-      const tavilyResponse = await fetch('https://api.tavily.com/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          api_key: process.env.TAVILY_API_KEY,
-          query: tavilyQuery,
-          search_depth: "basic",
-          max_results: 8
-        }),
-        signal: AbortSignal.timeout(10000) // 10 second timeout
-      });
+    let isLiveSearch = false;
 
-      if (!tavilyResponse.ok) {
-         throw new Error(`Tavily API responded with status ${tavilyResponse.status}`);
+    if (tavilyKey && tavilyKey.trim().length > 0) {
+      try {
+        const tavilyResponse = await fetch('https://api.tavily.com/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            api_key: tavilyKey,
+            query: tavilyQuery,
+            search_depth: "basic",
+            max_results: 8
+          }),
+          signal: AbortSignal.timeout(10000) // 10 second timeout
+        });
+
+        if (tavilyResponse.ok) {
+          const tavilyData = await tavilyResponse.json();
+          if (tavilyData && tavilyData.results && tavilyData.results.length > 0) {
+            console.log("✅ Nexus: Using Live Tavily Search results.");
+            searchContext = JSON.stringify(tavilyData);
+            isLiveSearch = true;
+          }
+        }
+      } catch (e) {
+        console.warn("⚠️ Nexus: Tavily search failed, falling back to AI knowledge:", e);
       }
-
-      const tavilyData = await tavilyResponse.json();
-
-      if (!tavilyData || !tavilyData.results || tavilyData.results.length === 0) {
-         throw new Error("No results returned from Tavily.");
-      }
-
-      searchContext = JSON.stringify(tavilyData);
-    } catch (e) {
-      console.warn("Tavily search failed:", e);
-      throw new Error("Web search failed. Please try again.");
+    } else {
+      console.log("ℹ️ Nexus: No TAVILY_API_KEY found, using AI fallback knowledge.");
     }
 
     // Step 2: AI Curation
-    const prompt = `You are an expert university academic curator. Review these live search results. Select the 3 most authoritative and helpful links for a student studying ${unitTitle} (${courseName}). DO NOT invent links. ONLY use the provided URLs.
-
+    const prompt = isLiveSearch 
+      ? `You are an expert university academic curator. Review these live search results. Select the 3 most authoritative and helpful links for a student studying ${unitTitle} (${courseName}). DO NOT invent links. ONLY use the provided URLs.
+      
 COURSE: "${courseName}"
 UNIT: "${unitTitle}"
 TOPICS TO MASTER: ${topics.join(', ')}
 STUDENT PREFERENCE: ${preference}
 
 LIVE SEARCH RESULTS (JSON):
-${searchContext}`;
+${searchContext}`
+      : `You are an expert university academic curator. Suggest 3 highly authoritative and free online resources (videos, articles, or interactive docs) for a student studying ${unitTitle} (${courseName}).
+Since live search is currently unavailable, prioritize world-class platforms like MIT OCW, Khan Academy, Neso Academy, Gate Smashers, or official documentation.
+
+COURSE: "${courseName}"
+UNIT: "${unitTitle}"
+TOPICS TO MASTER: ${topics.join(', ')}
+STUDENT PREFERENCE: ${preference}
+
+Return exactly 3 resources in the required JSON format.`;
 
     try {
       const response = await ai.models.generateContent({

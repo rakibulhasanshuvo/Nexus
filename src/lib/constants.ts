@@ -57,9 +57,45 @@ export const COURSE_DETAILS: Record<string, {
   syllabus_roadmap?: { week: number; topic: string; query: string }[];
   exam_intel?: string[];
 }> = {
+  "0222-101": {
+    overview: "Technology and Society (0222-101) explores the intersection of sociology, science, and technology, covering foundational social structures, dynamics, and global technology-driven changes.",
+    topics: [
+      "Fundamental Sociology: Society, science, and technology",
+      "Social Dynamics: Culture, socialization, personality development",
+      "Structures and Inequality: Stratification, globalization, mass media",
+      "Global and Environmental Issues: Poverty, crime, delinquency",
+      "Demographics and Urbanization: Rural and urban sociology",
+      "Population Studies: Migration and technology-driven social change"
+    ],
+    books: [
+      { title: "Sociology", author: "Richard T. Schaefer", edition: "13th" }
+    ],
+    exam_intel: ["Define 'Cultural Lag'", "Impact of Globalization on Technology", "Urbanization Trends in Developing Nations"]
+  },
+  "0231-101": {
+    overview: "Communicative English (0231-101) focuses on language foundations, academic writing, professional documentation, and oral presentation skills.",
+    topics: [
+      "Communication Foundations: Language, speech vs. writing",
+      "Academic Writing Skills: Thesis statements, paragraph development",
+      "Cohesion and Context: Descriptive, narrative, expository writing",
+      "Professional Documentation: Reports, letters, memorandums",
+      "Oral and Interactional Skills: Sounds, stress, intonation",
+      "Production and Presentation: Public speaking, negotiating skills"
+    ],
+    books: [
+      { title: "High School English Grammar and Composition", author: "Wren & Martin", edition: "Revised" }
+    ],
+    exam_intel: ["Drafting Formal Memorandums", "Structuring an Expository Essay", "Interpersonal Communication Scenarios"]
+  },
   "0533-101": {
-    overview: "Physics I (Electricity & Magnetism) provides a rigorous foundation in electromagnetic theory.",
-    topics: ["Coulomb's Law", "Kirchhoff's Laws", "AC Circuits", "Gauss's Law", "Thevenin's Theorem"],
+    overview: "Physics I (Electricity & Magnetism) provides a rigorous foundation in electromagnetic theory, circuit analysis, and network theorems.",
+    topics: [
+      "Electrostatics: Coulomb's law, electric fields, Gauss's law",
+      "DC Circuit Analysis: Ohm's law, Kirchhoff's laws",
+      "Network Theorems: Superposition, Thevenin, Norton",
+      "Electromagnetism: Faraday's law, Lenz's law, Ampere's law",
+      "AC Fundamentals: Alternating voltage, RMS values"
+    ],
     books: [
       { title: "Introductory Circuit Analysis", author: "Robert L. Boylestad", edition: "12th" },
       { title: "Electrical Technology", author: "B.L. Theraja", edition: "3rd" }
@@ -69,11 +105,42 @@ export const COURSE_DETAILS: Record<string, {
       { week: 5, topic: "Kirchhoff's Laws (KVL & KCL)", query: "Kirchhoff's voltage and current law tutorial" },
       { week: 12, topic: "AC Circuits & Resonance", query: "AC circuits physics tutorial" }
     ],
-    exam_intel: ["Derive Gauss's Law", "Solve Complex Circuits using Thevenin's Theorem", "Lab: Verify Ohm's Law (Graph Plotting)"]
+    exam_intel: ["Derive Gauss's Law", "Solve Complex Circuits using Thevenin's Theorem", "Verification of Ohm's Law (Graph Plotting)"]
+  },
+  "0533-102": {
+    overview: "Physics I Lab focuses on practical verification of electrical laws and theorems using laboratory equipment.",
+    topics: [
+      "Equipment Familiarization: Lab equipment usage",
+      "Experimental Verification: Ohm's law, KCL, KVL",
+      "Network Analysis: Series and parallel circuits",
+      "Theorems Application: Superposition, Thevenin, Norton, Max Power"
+    ],
+    exam_intel: ["Demonstrate KVL on a Breadboard", "Measure Thevenin Equivalent Voltage", "Safety Precautions in Electrical Lab"]
+  },
+  "0541-101": {
+    overview: "Calculus & Vector Analysis covers fundamental mathematical tools including limits, differentiation, and vector fields.",
+    topics: [
+      "Foundations: Number systems, functions, parametric equations",
+      "Limits and Differentiation: L'Hospital's rule, continuity, tangent lines",
+      "Optimization: Maximum and minimum problems",
+      "Vector Analysis: Gradient, Divergence, Integration by parts"
+    ],
+    books: [{ title: "Calculus: Early Transcendentals", author: "Howard Anton", edition: "10th" }],
+    syllabus_roadmap: [
+      { week: 1, topic: "Functions, Limits & Continuity", query: "Calculus limits and continuity tutorial" },
+      { week: 5, topic: "Successive Differentiation", query: "Calculus maxima and minima problems" },
+      { week: 8, topic: "Integration by Parts", query: "Integration by parts calculus tutorial" }
+    ],
+    exam_intel: ["Find the Gradient of a Scalar Function", "Evaluate Area under Curves", "Solve L'Hospital's Rule Problems"]
   },
   "0613-101": {
-    overview: "Structured Programming Language (C) introduces computer programming fundamentals.",
-    topics: ["Algorithm Specification", "Control Structures", "Pointers & Strings", "File Management", "Structures"],
+    overview: "Structured Programming Language (C) introduces computer programming fundamentals, algorithms, and structured paradigms.",
+    topics: [
+      "Concepts and History: Programming history, problem-solving, algorithms",
+      "Paradigm and Syntax: Assemblers, structured, procedural, OOP paradigms",
+      "Core Syntax: Identifiers, keywords, data types, operators",
+      "Functions and Control: I/O functions, if-else, switch, loops, functions"
+    ],
     books: [
       { title: "Let Us C", author: "Yashavant Kanetkar", edition: "15th" },
       { title: "The C Programming Language", author: "Kernighan & Ritchie", edition: "2nd" }
@@ -83,18 +150,7 @@ export const COURSE_DETAILS: Record<string, {
       { week: 5, topic: "Control Structures (If-Else, Switch, Loops)", query: "C programming control structures" },
       { week: 7, topic: "Pointers & Strings", query: "C programming pointers and strings" }
     ],
-    exam_intel: ["Understand Memory Management (Pointers)", "Viva: Difference between Structure and Union", "Lab: Standard C Lab Report Format"]
-  },
-  "0541-101": {
-    overview: "Calculus & Vector Analysis covers fundamental mathematical tools.",
-    topics: ["Differentiation", "Integration", "Vector Analysis", "Gradient", "Divergence"],
-    books: [{ title: "Calculus: Early Transcendentals", author: "Howard Anton", edition: "10th" }],
-    syllabus_roadmap: [
-      { week: 1, topic: "Functions, Limits & Continuity", query: "Calculus limits and continuity tutorial" },
-      { week: 5, topic: "Successive Differentiation", query: "Calculus maxima and minima problems" },
-      { week: 8, topic: "Integration by Parts", query: "Integration by parts calculus tutorial" }
-    ],
-    exam_intel: ["Find the Gradient of a Scalar Function", "Evaluate Area under Curves"]
+    exam_intel: ["Understand Memory Management (Pointers)", "Difference between Structure and Union", "Standard C Lab Report Format"]
   }
 };
 

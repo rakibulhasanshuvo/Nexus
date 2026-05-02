@@ -354,12 +354,24 @@ export async function findStructuredTutorialsAction(
           query: tavilyQuery,
           search_depth: "basic",
           max_results: 8
-        })
+        }),
+        signal: AbortSignal.timeout(10000) // 10 second timeout
       });
+
+      if (!tavilyResponse.ok) {
+         throw new Error(`Tavily API responded with status ${tavilyResponse.status}`);
+      }
+
       const tavilyData = await tavilyResponse.json();
+
+      if (!tavilyData || !tavilyData.results || tavilyData.results.length === 0) {
+         throw new Error("No results returned from Tavily.");
+      }
+
       searchContext = JSON.stringify(tavilyData);
     } catch (e) {
-      console.warn("Tavily search failed. Continuing with empty context.", e);
+      console.warn("Tavily search failed:", e);
+      throw new Error("Web search failed. Please try again.");
     }
 
     // Step 2: AI Curation

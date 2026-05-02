@@ -89,6 +89,7 @@ export interface SyllabusModule {
 }
 
 export interface ModuleCheatSheet {
+  data?: CheatSheetData;
   moduleId: string;
   markdownContent: string;
 }
@@ -106,4 +107,16 @@ export interface StructuredTutorial {
   language: 'Bangla' | 'English' | 'Hindi' | string;
   searchQuery: string;
   url?: string;
+}
+
+export interface CheatSheetFormula {
+  name: string;
+  equation: string;
+}
+
+export interface CheatSheetData {
+  title: string;
+  coreConcepts: string[];
+  formulas: CheatSheetFormula[];
+  proTips: string[];
 }

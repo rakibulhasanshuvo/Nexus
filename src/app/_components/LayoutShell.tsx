@@ -23,6 +23,7 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const { user, isLoading, signOut } = useAuth();
+  const isResourcePage = pathname?.startsWith('/resources');
 
   const navItems = [
     { id: 'dashboard', label: 'Home', icon: Home, href: '/' },
@@ -157,15 +158,26 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
       {/* Main Area */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
         {/* Content - No Header */}
-        <div className="flex-1 overflow-y-auto apple-scrollbar bg-studio">
-          <div className="max-w-full mx-auto p-3 lg:p-6 animate-apple-in">
+        <div className={`flex-1 apple-scrollbar bg-studio ${isResourcePage ? 'overflow-hidden flex flex-col' : 'overflow-y-auto'}`}>
+          <div className={`animate-apple-in ${isResourcePage ? 'w-full h-full' : 'max-w-full mx-auto p-3 lg:p-6'}`}>
             {/* Mobile Nav Trigger */}
-            <button
-              className="lg:hidden mb-6 p-3 rounded-2xl bg-[var(--bg-secondary)] shadow-sm text-[var(--text-primary)] inline-flex items-center gap-2 font-bold text-xs"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <Menu className="w-4 h-4" /> Menu
-            </button>
+            {!isResourcePage && (
+              <button
+                className="lg:hidden mb-6 p-3 rounded-2xl bg-[var(--bg-secondary)] shadow-sm text-[var(--text-primary)] inline-flex items-center gap-2 font-bold text-xs"
+                onClick={() => setIsMobileMenuOpen(true)}
+              >
+                <Menu className="w-4 h-4" /> Menu
+              </button>
+            )}
+
+            {isResourcePage && (
+              <button
+                className="lg:hidden fixed top-4 right-4 z-50 p-3 rounded-full bg-[var(--bg-secondary)] shadow-lg text-[var(--text-primary)] border border-[var(--border-subtle)]"
+                onClick={() => setIsMobileMenuOpen(true)}
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            )}
             
             {children}
           </div>

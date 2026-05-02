@@ -62,19 +62,19 @@ export const COURSE_DETAILS: Record<string, {
   "0222-101": {
     overview: "Technology and Society (GED Sociology) explores the intersection of sociological theory, technological evolution, and population dynamics in a globalized world.",
     topics: [
-      "Foundations: Society, Science, Technology, and the Industrial Revolution",
-      "Social Entities: Definitions of Community, Association, and Institutions",
-      "Research Methods: Stages of Social Research and Sociological Analysis",
-      "Culture: Relationship between Technology, Culture, and Cultural Lag",
-      "Socialization: Personality Development, Family Structures, and Social Control",
-      "Global Development: Industrialization, Globalization, and Dependency Theory",
-      "Sustainability: Sustainable Development, Technology Transfer, and Modernity",
-      "Social Structure: Pre-industrial, Industrial, and Post-industrial Societies",
-      "Stratification: Social Inequality, Mobility, and Poverty Dynamics",
-      "Urbanization: Rural/Urban Sociology and City Development",
-      "Population Dynamics: Fertility, Mortality, and Human Migration",
-      "Demographic Theories: Malthusian, Optimum, and Transition Theories",
-      "Policy: National and International Population Policies"
+      "Sociological Foundations: The interplay of Society, Science, Technology, and the Industrial Revolution",
+      "Core Social Entities: Structural definitions of Community, Association, and Institutions",
+      "Sociological Research Methods: Systematic stages of Social Research and Analysis",
+      "Culture & Technology: The dynamics of Cultural Evolution, Technology Integration, and Cultural Lag",
+      "Socialization & Identity: Personality Development, Family Frameworks, and Mechanisms of Social Control",
+      "Global Development Paradigms: Industrialization, Globalization trends, and Dependency Theory",
+      "Sustainability & Modernity: Sustainable Development practices, Technology Transfer, and Modernization",
+      "Evolution of Social Structures: Transitions across Pre-industrial, Industrial, and Post-industrial Societies",
+      "Social Stratification: Analysis of Social Inequality, Class Mobility, and Poverty Dynamics",
+      "Urbanization & Society: Rural vs. Urban Sociology and the impacts of City Development",
+      "Population Dynamics: Fundamental metrics of Fertility, Mortality, and Human Migration patterns",
+      "Demographic Frameworks: Malthusian, Optimum, and Demographic Transition Theories",
+      "Population Policies: Formulation and impact of National and International Population Policies"
     ],
     books: [
       { title: "Sociology: A Brief Introduction", author: "Richard T. Schaefer", edition: "13th" },
@@ -95,17 +95,17 @@ export const COURSE_DETAILS: Record<string, {
   "0231-101": {
     overview: "Communicative English is a GED requirement designed to equip students with essential social, academic, and professional communication skills.",
     topics: [
-      "Foundations: Language vs. Communication and Speech vs. Writing",
-      "Structural Writing: Topic Selection, Thesis Statements, and Paragraphing",
-      "Linguistic Principles: Unity, Coherence, and Cohesion in Composition",
-      "Writing Styles: Descriptive, Narrative, Expository, and Technical Writing",
-      "Formal Documentation: Reports, Manuals, Letters, Memos, and Minutes",
-      "Academic Writing: Essays, Term Papers, Bibliographies, and Footnotes",
-      "The Writing Process: Drafting, Planning, Revising, and Final Editing",
-      "Phonetics: Sounds, Stress, Intonation, and Rhythmic Patterns",
-      "Interactional Skills: Interpersonal and Formal/Informal Communication",
-      "Public Speaking: Presentations, Discussions, and Negotiating Skills",
-      "Rhetorical Devices and Translation (Verbal to Non-verbal forms)"
+      "Communication Foundations: Distinguishing Language from Communication and Speech from Writing",
+      "Structural Writing Mechanics: Topic Selection, formulating Thesis Statements, and Effective Paragraphing",
+      "Linguistic Cohesion: Principles of Unity, Coherence, and Logical Flow in Composition",
+      "Writing Paradigms: Techniques for Descriptive, Narrative, Expository, and Technical Writing",
+      "Formal Documentation: Structuring Professional Reports, Manuals, Letters, Memos, and Meeting Minutes",
+      "Academic Discourse: Crafting Essays, Term Papers, Bibliographies, and proper Footnote formatting",
+      "The Writing Lifecycle: Strategies for Drafting, Planning, Revising, and Final Editing",
+      "Phonetics & Pronunciation: Articulation of Sounds, Stress placement, Intonation, and Rhythmic Patterns",
+      "Interactional Dynamics: Interpersonal Communication across Formal and Informal contexts",
+      "Public Speaking & Negotiation: Techniques for Effective Presentations, Group Discussions, and Negotiation",
+      "Rhetorical Devices & Translation: Identifying Rhetorical Strategies and Verbal to Non-verbal Translation"
     ],
     books: [
       { title: "High School English Grammar", author: "Wren & Martin", edition: "Latest" },
@@ -126,16 +126,16 @@ export const COURSE_DETAILS: Record<string, {
   "0533-101": {
     overview: "Physics I (Electricity & Magnetism) provides a rigorous foundation in electromagnetic theory, circuit analysis techniques (Nodal/Mesh), and comprehensive network theorems.",
     topics: [
-      "Fundamental Principles: Electrical Units, Charge, and Coulomb's Law",
-      "Electric Fields & Media: Lines of Force, Gauss’s Law, Dipoles, and Dielectric Media",
-      "Potential & Circuits: Potential Function, Components, Networks, and Divider Rules",
-      "Circuit Laws & Analysis: Ohm's, Kirchhoff's, Wye-delta, Nodal, and Mesh Analysis",
-      "Sources & Theorems: Superposition, Thevenin, Norton, Max Power, and Reciprocity",
-      "Advanced Theorems: Millman’s, Substitution, and Reciprocity Theorems",
-      "AC Analysis: Series/Parallel AC Networks, Passive Elements, and RMS Values",
-      "Magnetic Fields & Forces: Ampere's Law, Biot-Savart Law, and Magnetic Forces",
-      "Electromagnetic Induction: Faraday’s/Lenz's Law, Self and Mutual Induction",
-      "Transformers: Introduction to Principles and Applications"
+      "Electrostatic Foundations: Electrical Units, Point Charges, and Coulomb's Law",
+      "Electric Fields & Gauss's Law: Lines of Force, Electric Dipoles, and Behavior in Dielectric Media",
+      "Electric Potential & Capacitance: Potential Functions, Circuit Components, and Voltage/Current Divider Rules",
+      "DC Circuit Analysis: Ohm's Law, Kirchhoff's Laws (KCL/KVL), Wye-Delta Transformations, and Nodal/Mesh Analysis",
+      "Core Network Theorems: Application of Superposition, Thevenin’s, Norton’s, and Maximum Power Transfer Theorems",
+      "Advanced Circuit Theorems: Utilizing Millman’s, Substitution, and Reciprocity Theorems in Complex Networks",
+      "AC Circuit Fundamentals: Series/Parallel AC Networks, Passive Element Responses, and RMS Value Calculations",
+      "Magnetostatics: Magnetic Fields, Ampere's Law, Biot-Savart Law, and Magnetic Forces on Charges",
+      "Electromagnetic Induction: Faraday’s Laws, Lenz's Law, and principles of Self and Mutual Inductance",
+      "Transformer Principles: Introduction to Transformer Operation, Construction, and Application"
     ],
     books: [
       { title: "Introductory Circuit Analysis", author: "Robert L. Boylestad", edition: "12th" },
@@ -156,32 +156,32 @@ export const COURSE_DETAILS: Record<string, {
   "0533-102": {
     overview: "Physics I Lab focuses on practical verification of electrical laws and theorems using laboratory equipment.",
     topics: [
-      "Equipment Familiarization: Lab equipment usage and safety",
-      "Experimental Verification: Ohm's law and basic circuit measurements",
-      "Verification of Kirchhoff's Laws (KCL and KVL)",
-      "Network Analysis: Series and parallel resistance circuits",
-      "Theorems Application: Superposition and Thevenin’s Theorem",
-      "Power Transfer: Maximum Power Transfer Theorem verification"
+      "Laboratory Familiarization: Safety protocols and proper utilization of electrical lab equipment",
+      "Empirical Verification of Ohm's Law: Conducting basic circuit measurements and data analysis",
+      "Kirchhoff's Laws in Practice: Experimental validation of KCL and KVL in multi-loop circuits",
+      "Resistive Network Analysis: Constructing and analyzing complex Series and Parallel configurations",
+      "Network Theorem Validation: Experimental application of Superposition and Thevenin’s Theorems",
+      "Power Optimization: Practical verification of the Maximum Power Transfer Theorem"
     ],
     exam_intel: ["Demonstrate KVL on a Breadboard", "Measure Thevenin Equivalent Voltage", "Safety Precautions in Electrical Lab"]
   },
   "0541-101": {
     overview: "Differential and Integral Calculus and Vector Analysis covers fundamental and advanced mathematical tools including differentiation, integration, and vector fields essential for engineering.",
     topics: [
-      "Foundations: Sets of Real Numbers, Intervals, Absolute Value, and Functions (Domain and Range)",
-      "Functions & Graphs: Various types of Functions, Parametric Equations, and Graph of Functions",
-      "Limits & Continuity: Limits, L'Hôpital's Rule, Indeterminate Forms, Continuity, and Differentiability",
-      "Derivatives: Geometric Interpretation, Tangent Lines, Chain Rule, and Implicit Differentiation",
-      "Advanced Differentiation: Successive Differentiation, Leibnitz's Theorem, and Partial Derivatives",
-      "Theorems & Applications: Rolle's, Mean-Value, Euler's, Taylor/Maclaurin series, Max/Min problems",
-      "Integration Methods: Integration by Substitution, Integration by Parts, and Integration by Reduction",
-      "Functions & Forms: Definite Integrals, and Beta and Gamma Functions",
-      "Geometric Applications: Rectification, Area Under Curves, and Volumes and Areas of Surfaces",
-      "Vector Basics: Multiple Products of Vectors, and Linear Dependence and Independence of Vectors",
-      "Vector Calculus: Differentiation and Integration of Vectors with elementary applications",
-      "Integral Theorems: Line, Surface, and Volume Integrals",
-      "Vector Fields: Gradient, Divergence, and Curl (including various formulae and integral forms)",
-      "Major Vector Theorems: Divergence Theorem, Stokes's Theorem, and Gauss's Theorem"
+      "Mathematical Foundations: Sets of Real Numbers, Intervals, Absolute Values, and Function Domain/Range",
+      "Functions & Graphical Analysis: Categorization of Functions, Parametric Equations, and Curve Sketching",
+      "Limits & Continuity: Evaluating Limits, applying L'Hôpital's Rule for Indeterminate Forms, and Continuity Analysis",
+      "Differential Calculus: Geometric Interpretation of Derivatives, Tangent Lines, Chain Rule, and Implicit Differentiation",
+      "Advanced Differentiation Techniques: Successive Differentiation, Leibnitz's Theorem, and Partial Derivatives",
+      "Core Calculus Theorems: Applications of Rolle's, Mean-Value, and Euler's Theorems, plus Taylor/Maclaurin Series Expansion",
+      "Optimization: Solving practical Maxima and Minima problems using differential calculus",
+      "Integral Calculus Methods: Integration techniques including Substitution, By Parts, and Reduction Formulae",
+      "Special Functions & Integrals: Evaluating Definite Integrals and utilizing Beta and Gamma Functions",
+      "Geometric Applications of Integration: Curve Rectification, Calculating Area Under Curves, and Surface/Volume computations",
+      "Vector Fundamentals: Scalar and Vector Products, and determining Linear Dependence/Independence",
+      "Vector Calculus Basics: Differentiation and Integration of Vector Functions with engineering applications",
+      "Vector Fields & Operators: Analyzing Gradient, Divergence, and Curl, including their integral forms",
+      "Advanced Vector Theorems: Application of Divergence (Gauss's), Stokes's, and Green's Theorems"
     ],
     books: [
       { title: "Calculus: Early Transcendentals", author: "Howard Anton", edition: "10th" },
@@ -202,17 +202,17 @@ export const COURSE_DETAILS: Record<string, {
   "0613-101": {
     overview: "Structured Programming focuses on the fundamentals of programming logic and the C language, covering everything from basic syntax to advanced memory management.",
     topics: [
-      "Foundations: Programming History, Problem Solving, and Algorithms",
-      "Methodologies: Debugging, Testing, Documentation, and Design",
-      "System Environment: BIOS, Compilers, Interpreters, and OS (Linux/Windows)",
-      "Paradigms: Procedural, Modular, and Object-Oriented Programming",
-      "C Syntax: Identifiers, Keywords, Data Types, and Operators",
-      "Control Flow: Data I/O, Conditional Statements, and Loop Structures",
-      "Data Structures: 1D/2D Arrays, Strings, Structures, Unions, and Bit-fields",
-      "Advanced C: Functions, Recursion, Preprocessors, and Storage Classes",
-      "Memory Management: Pointers, Function Pointers, and Dynamic Memory",
-      "File Handling: Techniques for Data and External File Operations",
-      "Specialized Features: Access Modifiers, Type Conversion, and Advanced Types"
+      "Programming Foundations: Evolution of Programming, Logical Problem Solving, and Algorithm Design",
+      "Software Development Life Cycle: Best practices in Debugging, Testing, Documentation, and Program Design",
+      "System Environments: Understanding BIOS, Compilers, Interpreters, and Operating Systems (Linux/Windows)",
+      "Programming Paradigms: Comparative study of Procedural, Modular, and Object-Oriented methodologies",
+      "C Language Fundamentals: Syntax rules, Identifiers, Keywords, Primitive Data Types, and Operators",
+      "Control Structures: Managing Data I/O, implementing Conditional Logic, and structuring Iterative Loops",
+      "Data Structures in C: Manipulating 1D/2D Arrays, Strings, Structures, Unions, and utilizing Bit-fields",
+      "Modular Programming: Designing Functions, implementing Recursion, using Preprocessors, and managing Storage Classes",
+      "Memory Management: Understanding Pointers, Function Pointers, and Dynamic Memory Allocation (malloc/free)",
+      "File Operations: Techniques for Data persistence and External File Handling in C",
+      "Advanced C Features: Utilizing Access Modifiers, Type Conversions, and Advanced Data Types"
     ],
     books: [
       { title: "Programming in ANSI C", author: "E. Balagurusamy", edition: "7th" },

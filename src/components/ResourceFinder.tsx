@@ -13,6 +13,8 @@ import { supabase } from '@/lib/supabase';
 import { RotateCcw, Library, Search, BookOpen, Flame, PenTool, CheckCircle, ArrowRight, BookA, PlayCircle, Video, FileText, Download, Copy, Save, Send, Globe, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 // Skeleton Component
 const SkeletonLoader = ({ phase }: { phase?: string }) => (
@@ -80,6 +82,16 @@ const ResourceFinderInner: React.FC = () => {
   // UI States
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
+  const [vh, setVh] = useState(0);
+
+  useEffect(() => {
+    const updateVh = () => {
+      setVh(window.innerHeight);
+    };
+    updateVh();
+    window.addEventListener('resize', updateVh);
+    return () => window.removeEventListener('resize', updateVh);
+  }, []);
 
   // Data States (Persistent Cache for AI responses)
   const [cheatSheets, setCheatSheets] = useLocalStorage<Record<string, CheatSheetData | string>>('bou_resource_cheatsheets', {});
@@ -235,9 +247,9 @@ const ResourceFinderInner: React.FC = () => {
 
   return (
 
-    <div className="animate-fade-in w-full flex flex-col lg:flex-row min-h-[calc(100vh-100px)] gap-0 bg-[var(--bg-primary)]">
+    <div className="animate-fade-in w-full h-full flex flex-col lg:flex-row overflow-hidden gap-0 bg-[var(--bg-primary)]">
       {/* Left Column (Sidebar) */}
-      <aside className="w-full lg:w-[320px] lg:min-w-[320px] bg-[var(--bg-secondary)]/50 border-r border-[var(--border-subtle)] flex flex-col h-full overflow-y-auto z-10">
+      <aside className="w-full lg:w-[360px] lg:min-w-[360px] bg-[var(--bg-secondary)] border-r border-[var(--border-subtle)] flex flex-col h-full overflow-hidden z-10">
         <div className="p-6 border-b border-[var(--border-subtle)]">
           <h2 className="text-xl font-bold tracking-tight text-[var(--text-primary)] mb-6">Study Context</h2>
 
@@ -281,7 +293,7 @@ const ResourceFinderInner: React.FC = () => {
         </div>
 
         {/* Sidebar Modules List */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-2">
+        <div className="flex-1 p-4 overflow-y-auto space-y-2 apple-scrollbar">
           {selectedCourse && courseDetail ? (
             <>
               <h3 className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-tertiary)] mb-4 flex items-center gap-2 px-2">
@@ -294,22 +306,22 @@ const ResourceFinderInner: React.FC = () => {
                     setSelectedModuleId(module.id);
                     if (!activeTool) setActiveTool('tma');
                   }}
-                  className={`p-3 rounded-xl border cursor-pointer transition-all group flex items-start gap-3 ${selectedModuleId === module.id ? 'bg-[var(--bg-tertiary)] border-[var(--text-primary)]/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-[var(--bg-tertiary)]/50 hover:border-[var(--border-subtle)]'}`}
+                  className={`p-2.5 rounded-xl border cursor-pointer transition-all group flex items-start gap-2.5 ${selectedModuleId === module.id ? 'bg-[var(--bg-tertiary)] border-[var(--text-primary)]/20 shadow-[0_2px_8px_rgba(0,0,0,0.05)]' : 'bg-transparent border-transparent hover:bg-[var(--bg-tertiary)]/50 hover:border-[var(--border-subtle)]'}`}
                 >
-                  <div className="mt-0.5">
+                  <div className="mt-1 shrink-0">
                     {selectedModuleId === module.id ? (
-                      <CheckCircle className="w-4 h-4 text-[var(--accent)]" />
+                      <CheckCircle className="w-3.5 h-3.5 text-[var(--accent)]" />
                     ) : (
-                      <div className="w-4 h-4 rounded-full border-2 border-[var(--border-subtle)] group-hover:border-[var(--text-tertiary)]" />
+                      <div className="w-3.5 h-3.5 rounded-full border-2 border-[var(--border-subtle)] group-hover:border-[var(--text-tertiary)]" />
                     )}
                   </div>
-                  <div className="flex-1">
-                    <p className={`font-bold text-[13px] leading-tight transition-colors ${selectedModuleId === module.id ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-bold text-[12px] leading-snug transition-colors truncate ${selectedModuleId === module.id ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>
                       Unit {module.unit}: {module.title}
                     </p>
-                    <p className="text-[10px] font-medium text-[var(--text-tertiary)] mt-1 flex items-center gap-2">
-                      {module.isHighYield && <span className="text-[var(--danger)] flex items-center gap-0.5"><Flame className="w-3 h-3" /> High-Yield</span>}
-                      Target Unit
+                    <p className="text-[9px] font-bold text-[var(--text-tertiary)] mt-0.5 flex items-center gap-2">
+                      {module.isHighYield && <span className="text-[var(--danger)] flex items-center gap-0.5"><Flame className="w-2.5 h-2.5" /> High-Yield</span>}
+                      <span className="opacity-50">Exam Unit</span>
                     </p>
                   </div>
                 </div>
@@ -436,7 +448,7 @@ const ResourceFinderInner: React.FC = () => {
                           <CheckCircle className="w-5 h-5" /> Generated Outline
                         </h3>
                         <div className="style-markdown text-[var(--text-primary)] max-h-[800px] overflow-y-auto pr-4">
-                          <ReactMarkdown>{tmaOutlines[module.id]}</ReactMarkdown>
+                          <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{tmaOutlines[module.id]}</ReactMarkdown>
                         </div>
                       </div>
                     )}
@@ -604,7 +616,7 @@ const ResourceFinderInner: React.FC = () => {
                             </div>
                           </div>
 
-                          <div id={`cheat-sheet-${module.id}`} className="bg-[var(--bg-primary)] p-6 rounded-xl border border-[var(--border-subtle)] space-y-6 max-h-[600px] overflow-y-auto">
+                          <div id={`cheat-sheet-${module.id}`} className="bg-[var(--bg-primary)] p-6 rounded-xl border border-[var(--border-subtle)] space-y-6 flex-1 overflow-y-auto apple-scrollbar">
                             <h2 className="text-2xl font-bold text-[var(--text-primary)]">{(cheatSheets[module.id] as CheatSheetData).title}</h2>
 
                             {/* Core Concepts */}
@@ -614,7 +626,9 @@ const ResourceFinderInner: React.FC = () => {
                                 {(cheatSheets[module.id] as CheatSheetData).coreConcepts.map((concept, idx) => (
                                   <li key={idx} className="flex gap-3 text-[14px] text-[var(--text-secondary)]">
                                     <div className="w-1.5 h-1.5 rounded-full bg-[#ffaa00] shrink-0 mt-2"></div>
-                                    <div className="style-markdown"><ReactMarkdown>{concept}</ReactMarkdown></div>
+                                    <div className="style-markdown">
+                                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{concept}</ReactMarkdown>
+                                    </div>
                                   </li>
                                 ))}
                               </ul>
@@ -633,7 +647,7 @@ const ResourceFinderInner: React.FC = () => {
                                       <div className="flex items-center justify-center bg-[var(--bg-primary)] p-4 md:p-8 rounded-xl border border-[var(--border-subtle)]/50 relative overflow-x-auto min-h-[140px] scrollbar-thin">
                                         <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                                         <div className="text-[18px] md:text-[22px] text-[var(--accent)] relative z-10 w-full text-center flex justify-center">
-                                          <BlockMath math={formula.equation} />
+                                          <BlockMath math={formula.equation.replace(/^\$\$|\$\$/g, '').replace(/^\$|\$/g, '')} />
                                         </div>
                                       </div>
                                     </div>
@@ -648,8 +662,13 @@ const ResourceFinderInner: React.FC = () => {
                                 <h3 className="text-[12px] font-black uppercase tracking-widest text-[var(--danger)] mb-3">Pro Tips</h3>
                                 <div className="space-y-3">
                                   {(cheatSheets[module.id] as CheatSheetData).proTips.map((tip, idx) => (
-                                    <div key={idx} className="bg-[var(--danger)]/10 border border-[var(--danger)]/20 p-4 rounded-xl text-[14px] text-[var(--text-primary)]">
-                                      <div className="style-markdown"><ReactMarkdown>{tip}</ReactMarkdown></div>
+                                    <div key={idx} className="bg-[var(--bg-tertiary)] border-l-4 border-[var(--danger)] p-4 rounded-r-xl rounded-l-md text-[14px] text-[var(--text-primary)] shadow-sm flex gap-3">
+                                      <div className="shrink-0 mt-1">
+                                        <Flame className="w-4 h-4 text-[var(--danger)]" />
+                                      </div>
+                                      <div className="style-markdown">
+                                        <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{tip}</ReactMarkdown>
+                                      </div>
                                     </div>
                                   ))}
                                 </div>
@@ -786,9 +805,14 @@ const ResourceFinderInner: React.FC = () => {
                                     <h5 className="text-[15px] font-bold leading-tight mb-2 text-[var(--text-primary)] group-hover/card:text-[var(--danger)] transition-colors pr-6">
                                       {tut.title}
                                     </h5>
-                                    <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed italic">
-                                      &quot;{tut.aiExplanation}&quot;
-                                    </p>
+                                    <div className="text-[12px] text-[var(--text-secondary)] leading-relaxed italic style-markdown">
+                                      <ReactMarkdown 
+                                        remarkPlugins={[remarkMath]} 
+                                        rehypePlugins={[rehypeKatex]}
+                                      >
+                                        {tut.aiExplanation}
+                                      </ReactMarkdown>
+                                    </div>
                                   </div>
                                 </div>
                               </a>

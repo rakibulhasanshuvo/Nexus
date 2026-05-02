@@ -89,6 +89,7 @@ export interface SyllabusModule {
 }
 
 export interface ModuleCheatSheet {
+  data?: CheatSheetData;
   moduleId: string;
   markdownContent: string;
 }
@@ -104,4 +105,16 @@ export interface CuratedResource {
   sourcePlatform: string;
   type: string;
   aiExplanation: string;
+}
+
+export interface CheatSheetFormula {
+  name: string;
+  equation: string;
+}
+
+export interface CheatSheetData {
+  title: string;
+  coreConcepts: string[];
+  formulas: CheatSheetFormula[];
+  proTips: string[];
 }

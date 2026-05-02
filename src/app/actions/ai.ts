@@ -1,6 +1,5 @@
 "use server";
 import { AI_MODELS } from "@/lib/ai-config";
-import { cookies } from "next/headers";
 import { GoogleGenAI, Type, Schema, Modality } from "@google/genai";
 import { CuratedResource, ExamRoutineItem } from "@/lib/types";
 
@@ -16,55 +15,19 @@ Rules:
 7. Resource Finder Logic: Use STRICT_FREE_ONLY filter. Prioritize high-retention English YouTube channels (Neso Academy, Gate Smashers, FreeCodeCamp) and MIT OCW/LibreTexts for Physics.
 `;
 
+import { getAvailableGeminiKey } from "@/lib/env";
+
 // Fallback logic
 async function withRetry<T>(operation: (ai: GoogleGenAI) => Promise<T>, userApiKey?: string): Promise<T> {
-  const availableKeys = [
-    process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY,
-    process.env.GEMINI_API_KEY_2,
-    process.env.GEMINI_API_KEY_3
-  ].filter(Boolean) as string[];
+  // If user passed a key directly via function args, use it. Otherwise, use the load balancer which checks cookies then env.
+  const resolvedKey = userApiKey || await getAvailableGeminiKey();
 
-  // Priority 1: User-provided key via HttpOnly cookie (Secure)
-  const cookieStore = await cookies();
-  const cookieKey = cookieStore.get("bou_user_api_key")?.value;
-
-  const finalApiKey = cookieKey || userApiKey;
-
-  if (finalApiKey) {
-    const ai = new GoogleGenAI({ apiKey: finalApiKey });
-    return await operation(ai);
+  if (!resolvedKey) {
+    throw new Error("No Gemini API key available. Please configure one in Settings.");
   }
 
-  if (availableKeys.length === 0) {
-    throw new Error("No GEMINI_API_KEY is defined in environment variables.");
-  }
-
-  let lastError: Error | undefined;
-
-  for (let i = 0; i < availableKeys.length; i++) {
-    try {
-      const ai = new GoogleGenAI({ apiKey: availableKeys[i] });
-      return await operation(ai);
-    } catch (error: unknown) {
-      lastError = error as Error;
-      const errObj = error as Record<string, unknown>;
-      // Check if it's a rate limit or quota issue
-      if (
-        errObj?.status === 429 ||
-        errObj?.status === 503 ||
-        String(errObj?.message).includes('429') ||
-        String(errObj?.message).includes('503') ||
-        String(errObj?.message).includes('exhausted') ||
-        String(errObj?.message).includes('quota')
-      ) {
-        console.warn(`API key ${i + 1} failed with rate limit/quota, trying next key...`);
-        continue;
-      }
-      throw error;
-    }
-  }
-
-  throw lastError;
+  const ai = new GoogleGenAI({ apiKey: resolvedKey });
+  return await operation(ai);
 }
 
 // ==========================================
@@ -267,27 +230,71 @@ export async function extractRoutineAction(
 // RESOURCE FINDER (ResourceFinder.tsx)
 // ==========================================
 
-export async function generateCheatSheetAction(courseName: string, unitTitle: string, topics: string[], userApiKey?: string): Promise<string> {
+export async function generateCheatSheetAction(
+  courseName: string,
+  unitTitle: string,
+  topics: string[],
+  focusAreas: string[],
+  format: string,
+  depth: string,
+  userApiKey?: string,
+  tweakPrompt?: string,
+  previousData?: unknown
+): Promise<unknown> {
   return await withRetry(async (ai) => {
-    const prompt = `Act as an expert instructor for the Bangladesh Open University (BOU).
+    let prompt = `Act as an expert instructor for the Bangladesh Open University (BOU).
 COURSE: "${courseName}"
 UNIT: "${unitTitle}"
 TOPICS TO COVER: ${topics.join(', ')}
+STUDENT FOCUS AREAS: ${focusAreas.join(', ')}
+DESIRED FORMAT STYLE: "${format}"
+DEPTH LEVEL: "${depth}"
 
 TASK: Generate a highly structured, 1-page "Cheat Sheet" for this specific unit. 
 CONSTRAINTS:
 1. Focus entirely on the core concepts needed for BOU final exams.
-2. Use markdown formatting with clear headers, bullet points, and bold text for key terms.
-3. Keep sentences short, punchy, and easy to memorize.
-4. If the topic involves formulas or code (like C programming), include exactly ONE perfect, minimal example.
-5. End with a "Top 3 Things to Memorize" section.`;
+2. Adapt the content style to the DESIRED FORMAT STYLE (e.g. if 'Flashcard Style', structure concepts as Q&A pairs).
+3. Adapt the detail level based on the DEPTH LEVEL.
+4. You must strictly output JSON matching the required schema. If there are no relevant formulas for this topic (e.g., History), return an empty array [] for formulas.`;
+
+    if (tweakPrompt && previousData) {
+      prompt += `
+
+USER TWEAK REQUEST: "${tweakPrompt}"
+PREVIOUS GENERATION DATA: ${JSON.stringify(previousData)}
+
+Please completely regenerate the JSON based on the tweak request.`;
+    }
 
     try {
       const response = await ai.models.generateContent({
         model: AI_MODELS.DEFAULT_OPS,
         contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              title: { type: Type.STRING },
+              coreConcepts: { type: Type.ARRAY, items: { type: Type.STRING } },
+              formulas: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    name: { type: Type.STRING },
+                    equation: { type: Type.STRING }
+                  },
+                  required: ["name", "equation"]
+                }
+              },
+              proTips: { type: Type.ARRAY, items: { type: Type.STRING } }
+            },
+            required: ["title", "coreConcepts", "formulas", "proTips"]
+          }
+        }
       });
-      return response.text || "Cheat sheet generation failed.";
+      return JSON.parse(response.text || '{}');
     } catch (e) {
       console.error("Failed to generate cheat sheet", e);
       throw new Error("Failed to generate cheat sheet.");

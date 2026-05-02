@@ -249,3 +249,20 @@ create table public.syllabus_progress (
 alter table public.syllabus_progress enable row level security;
 create policy "Users can manage own syllabus progress" on public.syllabus_progress for all using (auth.uid() = user_id);
 create trigger handle_syllabus_progress_updated_at before update on public.syllabus_progress for each row execute procedure public.handle_updated_at();
+
+-- ==========================================
+-- 9. Saved Summaries Table (Cheat Sheets)
+-- ==========================================
+create table public.saved_summaries (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.profiles(id) on delete cascade not null,
+  module_id text not null,
+  course_id text not null,
+  content jsonb not null default '{}'::jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.saved_summaries enable row level security;
+create policy "Users can manage own saved summaries" on public.saved_summaries for all using (auth.uid() = user_id);
+create trigger handle_saved_summaries_updated_at before update on public.saved_summaries for each row execute procedure public.handle_updated_at();

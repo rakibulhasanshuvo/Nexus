@@ -4,17 +4,16 @@ import { AI_MODELS, AIModelType } from './ai-config';
  * Retrieves the appropriate API key to use.
  * Priorities:
  * 1. userApiKey (from localStorage / client, passed down to server action)
- * 2. process.env.GEMINI_API_KEY (server default)
+ * 2. getAvailableGeminiKey() from env.ts (load balanced server default)
  */
-export function getApiKey(userApiKey?: string | null): string {
+export async function getApiKey(userApiKey?: string | null): Promise<string> {
   if (userApiKey && userApiKey.trim() !== '') {
     return userApiKey.trim();
   }
 
-  const serverKey = process.env.GEMINI_API_KEY;
-  if (!serverKey) {
-    throw new Error('No API key provided. Please provide a user key or ensure GEMINI_API_KEY is set in the environment.');
-  }
+  const { getAvailableGeminiKey } = await import('./env');
+  const serverKey = await getAvailableGeminiKey();
+
   return serverKey;
 }
 
@@ -36,9 +35,9 @@ export interface AIRequestConfig {
 /**
  * Generates the finalized routing configuration for an AI request.
  */
-export function resolveApiRoute(config: AIRequestConfig) {
+export async function resolveApiRoute(config: AIRequestConfig) {
   return {
     model: getModelIdentifier(config.operationType),
-    apiKey: getApiKey(config.userApiKey),
+    apiKey: await getApiKey(config.userApiKey),
   };
 }

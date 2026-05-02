@@ -2,7 +2,7 @@
 import { AI_MODELS } from "@/lib/ai-config";
 import { cookies } from "next/headers";
 import { GoogleGenAI, Type, Schema, Modality } from "@google/genai";
-import { StructuredTutorial, ExamRoutineItem } from "@/lib/types";
+import { CuratedResource, ExamRoutineItem } from "@/lib/types";
 
 // This file runs exclusively on the server, keeping API keys private.
 const SYSTEM_INSTRUCTION = `You are "BOU CSE Study Pilot", an Expert Academic Counselor for Bangladesh Open University BSc in CSE students. 
@@ -329,18 +329,42 @@ export async function findStructuredTutorialsAction(
   topics: string[],
   preference: string,
   userApiKey?: string
-): Promise<StructuredTutorial[]> {
+): Promise<CuratedResource[]> {
   return await withRetry(async (ai) => {
-    const prompt = `Act as an expert academic advisor for University students.
+    // Step 1: Live Search via Tavily API
+    const tavilyQuery = `${courseName} ${unitTitle} ${topics.join(' ')} ${preference}`;
+    // If preference strictly implies video tutorials, we could potentially route to YouTube Data API here in the future.
+
+    let searchContext = "";
+    try {
+      const tavilyResponse = await fetch('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          api_key: process.env.TAVILY_API_KEY,
+          query: tavilyQuery,
+          search_depth: "basic",
+          max_results: 8
+        })
+      });
+      const tavilyData = await tavilyResponse.json();
+      searchContext = JSON.stringify(tavilyData);
+    } catch (e) {
+      console.warn("Tavily search failed. Continuing with empty context.", e);
+    }
+
+    // Step 2: AI Curation
+    const prompt = `You are an expert university academic curator. Review these live search results. Select the 3 most authoritative and helpful links for a student studying ${unitTitle} (${courseName}). DO NOT invent links. ONLY use the provided URLs.
+
 COURSE: "${courseName}"
 UNIT: "${unitTitle}"
 TOPICS TO MASTER: ${topics.join(', ')}
 STUDENT PREFERENCE: ${preference}
 
-TASK: Find the absolute best 3 online resources (tutorials, videos, or articles) that perfectly explain these topics according to the student's preference.
-Focus on highly reputable channels (e.g., Neso Academy, Gate Smashers, Anisul Islam, FreeCodeCamp), top-tier domains (GeeksforGeeks, NPTEL, Coursera, edX, MIT OpenCourseWare), or any other high-quality educational platform.
-
-CRITICAL INSTRUCTION: You must provide actual, valid, live URLs for these resources. Do NOT hallucinate URLs or provide dead links. Search for real links from YouTube, GFG, MIT OCW, NPTEL, Coursera, etc. Respond ONLY with the requested JSON structure. Include both a direct 'url' and a fallback 'searchQuery'.`;
+LIVE SEARCH RESULTS (JSON):
+${searchContext}`;
 
     try {
       const response = await ai.models.generateContent({
@@ -354,14 +378,12 @@ CRITICAL INSTRUCTION: You must provide actual, valid, live URLs for these resour
               type: Type.OBJECT,
               properties: {
                 title: { type: Type.STRING },
-                type: { type: Type.STRING, description: "video, article, or interactive" },
-                provider: { type: Type.STRING, description: "YouTube, GFG, Coursera, etc." },
-                reason: { type: Type.STRING, description: "Why it fits their preference" },
-                language: { type: Type.STRING, description: "Bangla, English, etc." },
-                searchQuery: { type: Type.STRING, description: "A fallback search string" },
-                url: { type: Type.STRING, description: "A VALID, working direct URL to the resource. You must verify this exists." }
+                url: { type: Type.STRING },
+                sourcePlatform: { type: Type.STRING, description: "e.g., 'Medium', 'YouTube', 'University Website'" },
+                type: { type: Type.STRING, description: "Video, Article, Interactive" },
+                aiExplanation: { type: Type.STRING, description: "2-sentence explanation of why this specific link helps grasp the core concepts." }
               },
-              required: ["title", "type", "provider", "reason", "language", "searchQuery", "url"]
+              required: ["title", "url", "sourcePlatform", "type", "aiExplanation"]
             }
           }
         }

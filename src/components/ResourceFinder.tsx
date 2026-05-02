@@ -5,18 +5,24 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { generateCheatSheetAction, generateTMAOutlineAction, findStructuredTutorialsAction } from '@/app/actions/ai';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { COURSE_MAPPING, COURSE_DETAILS } from '@/lib/constants';
-import { StructuredTutorial } from '@/lib/types';
-import { RotateCcw, Library, Search, BookOpen, Flame, PenTool, CheckCircle, ArrowRight, BookA, PlayCircle, Video, FileText } from 'lucide-react';
+import { CuratedResource } from '@/lib/types';
+import { RotateCcw, Library, Search, BookOpen, Flame, PenTool, CheckCircle, ArrowRight, BookA, PlayCircle, Video, FileText, ExternalLink, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 
 // Skeleton Component
-const SkeletonLoader = () => (
-  <div className="animate-pulse space-y-3 mt-4 z-10 w-full">
-    <div className="h-4 bg-[var(--bg-tertiary)] rounded w-3/4"></div>
-    <div className="h-4 bg-[var(--bg-tertiary)] rounded w-full"></div>
-    <div className="h-4 bg-[var(--bg-tertiary)] rounded w-5/6"></div>
-    <div className="h-4 bg-[var(--bg-tertiary)] rounded w-2/3"></div>
+const SkeletonLoader = ({ phase }: { phase?: string }) => (
+  <div className="flex flex-col items-center justify-center py-8 space-y-4">
+    <div className="relative flex items-center justify-center w-12 h-12">
+      <div className="absolute w-full h-full border-2 border-t-transparent border-[var(--danger)] rounded-full animate-spin"></div>
+      <div className="absolute w-8 h-8 border-2 border-b-transparent border-[var(--text-primary)] rounded-full animate-spin direction-reverse"></div>
+      <div className="w-4 h-4 bg-[var(--danger)] rounded-full animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]"></div>
+    </div>
+    {phase && (
+      <p className="text-[12px] font-bold uppercase tracking-widest text-[var(--text-secondary)] animate-pulse">
+        {phase}
+      </p>
+    )}
   </div>
 );
 
@@ -75,9 +81,10 @@ const ResourceFinderInner: React.FC = () => {
   const [cheatSheets, setCheatSheets] = useLocalStorage<Record<string, string>>('bou_resource_cheatsheets', {});
   const [tmaOutlines, setTmaOutlines] = useLocalStorage<Record<string, string>>('bou_resource_tma_outlines', {});
   const [userContexts, setUserContexts] = useLocalStorage<Record<string, string>>('bou_resource_user_contexts', {});
-  const [tutorials, setTutorials] = useLocalStorage<Record<string, StructuredTutorial[]>>('bou_resource_tutorials', {});
+  const [tutorials, setTutorials] = useLocalStorage<Record<string, CuratedResource[]>>('bou_resource_tutorials', {});
   const [tutorialPref, setTutorialPref] = useLocalStorage<Record<string, string>>('bou_resource_tutorial_prefs', {});
   const [activeTool, setActiveTool] = useState<'cheat' | 'tma' | 'tutorial' | null>(null);
+  const [loadingPhase, setLoadingPhase] = useState<string>('');
 
 
 
@@ -153,6 +160,13 @@ const ResourceFinderInner: React.FC = () => {
     e.stopPropagation();
     if (tutorials[moduleId] && !force) return;
     setLoadingActionId(`tutorial-${moduleId}`);
+    setLoadingPhase('Scanning the web via Tavily...');
+
+    // Mock transition to curating phase after 1.5 seconds
+    const timerId = setTimeout(() => {
+      setLoadingPhase('AI is curating the best links...');
+    }, 1500);
+
     try {
       const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
       const pref = tutorialPref[moduleId] || "Best Bangla Tutorials from any platform";
@@ -163,7 +177,9 @@ const ResourceFinderInner: React.FC = () => {
     } catch (err) {
       console.error(err);
     } finally {
+      clearTimeout(timerId);
       setLoadingActionId(null);
+      setLoadingPhase('');
     }
   };
 
@@ -380,7 +396,7 @@ const ResourceFinderInner: React.FC = () => {
                       <div className="col-span-1 bg-[var(--bg-secondary)] rounded-2xl p-6 border border-[var(--border-subtle)] hover:border-[var(--accent)]/40 transition-colors">
                         <Flame className="w-6 h-6 text-[var(--accent)] mb-3" />
                         <h4 className="text-[14px] font-bold text-[var(--text-primary)] mb-2">Context is Key</h4>
-                        <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed">Ensure you've selected the correct academic term and unit in the sidebar for accurate references.</p>
+                        <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed">Ensure you&apos;ve selected the correct academic term and unit in the sidebar for accurate references.</p>
                       </div>
                       <div className="col-span-1 md:col-span-2 bg-[var(--bg-secondary)] rounded-2xl p-6 border border-[var(--border-subtle)] flex flex-col md:flex-row items-start md:items-center gap-6 relative overflow-hidden">
                         <div className="absolute right-[-20px] bottom-[-20px] opacity-5">
@@ -467,7 +483,7 @@ const ResourceFinderInner: React.FC = () => {
 
                       <div className="pt-2">
                         {loadingActionId === `tutorial-${module.id}` ? (
-                          <SkeletonLoader />
+                          <SkeletonLoader phase={loadingPhase} />
                         ) : tutorials[module.id] ? (
                           <div className="mt-2 flex flex-col gap-4">
                             <div className="flex justify-between items-center mb-2">
@@ -483,32 +499,27 @@ const ResourceFinderInner: React.FC = () => {
                               {tutorials[module.id].map((tut, i) => (
                                 <a
                                   key={i}
-                                  href={tut.url || (tut.type === 'video'
-                                    ? `https://www.youtube.com/results?search_query=${encodeURIComponent(tut.searchQuery)}`
-                                    : `https://www.google.com/search?q=${encodeURIComponent(tut.searchQuery)}`)
-                                  }
+                                  href={tut.url}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="block p-5 rounded-xl border border-[var(--border-subtle)] hover:border-[var(--danger)]/40 hover:shadow-lg bg-[var(--bg-primary)] transition-all group/card"
+                                  className="block p-5 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all group/card relative"
                                 >
                                   <div className="flex items-start gap-4">
                                     <div className="mt-1">
-                                      {tut.type === 'video' ? <Video className="w-5 h-5 text-[var(--danger)]" /> : <FileText className="w-5 h-5 text-[var(--accent)]" />}
+                                      {tut.type.toLowerCase().includes('video') ? <Video className="w-5 h-5 text-[var(--danger)]" /> : (tut.type.toLowerCase().includes('interactive') ? <Globe className="w-5 h-5 text-[var(--accent)]" /> : <FileText className="w-5 h-5 text-[#ffaa00]" />)}
                                     </div>
                                     <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
-                                          {tut.provider}
+                                      <div className="flex justify-between items-start mb-2">
+                                        <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border border-[var(--border-subtle)]">
+                                          {tut.sourcePlatform}
                                         </span>
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-tertiary)]">
-                                          {tut.language}
-                                        </span>
+                                        <ExternalLink className="w-4 h-4 text-[var(--text-tertiary)] group-hover/card:text-[var(--danger)] transition-colors" />
                                       </div>
-                                      <h5 className="text-[15px] font-bold leading-tight mb-2 text-[var(--text-primary)] group-hover/card:text-[var(--danger)] transition-colors">
+                                      <h5 className="text-[15px] font-bold leading-tight mb-2 text-[var(--text-primary)] group-hover/card:text-[var(--danger)] transition-colors pr-6">
                                         {tut.title}
                                       </h5>
-                                      <p className="text-[12px] text-[var(--text-secondary)] leading-snug line-clamp-2">
-                                        {tut.reason}
+                                      <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed italic">
+                                        &quot;{tut.aiExplanation}&quot;
                                       </p>
                                     </div>
                                   </div>

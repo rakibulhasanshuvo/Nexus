@@ -125,7 +125,7 @@ export async function searchWeb(params: SearchParams): Promise<SearchResultItem[
  */
 export async function parseSearchIntent(params: SearchParams): Promise<{ youtubeQuery: string; webQuery: string }> {
   try {
-    const { model, apiKey } = resolveApiRoute({
+    const { model, apiKey } = await resolveApiRoute({
       operationType: 'DEFAULT_OPS',
       userApiKey: params.userApiKey
     });
@@ -188,7 +188,7 @@ export async function performUnifiedSearch(params: SearchParams): Promise<Search
     // Let's implement the post-processing as requested by the prompt rules:
     // "Once external APIs return raw data, route it back through this model to parse and format it for the frontend."
 
-    const { model, apiKey } = resolveApiRoute({
+    const { model, apiKey } = await resolveApiRoute({
       operationType: 'DEFAULT_OPS',
       userApiKey: params.userApiKey
     });

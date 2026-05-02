@@ -5,6 +5,7 @@ import { resolveApiRoute } from '@/lib/api-router';
 // Alternatively we could use the @google/genai SDK. Since we want to use specific model strings we can just use the fetch API or SDK depending on requirements.
 // For now, these actions only do external API calls and use AI for parsing.
 import { GoogleGenAI } from '@google/genai';
+import { youtubeApiKey, tavilyApiKey } from '@/lib/env';
 
 // Initialize SDK with a generic approach, but we will instantiate per-request to allow BYOK
 function getGenAIClient(apiKey: string) {
@@ -30,7 +31,7 @@ export interface SearchParams {
  */
 export async function searchYouTube(params: SearchParams): Promise<SearchResultItem[]> {
   try {
-    const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+    const YOUTUBE_API_KEY = youtubeApiKey;
     if (!YOUTUBE_API_KEY) {
       console.warn('YOUTUBE_API_KEY is not configured.');
       return []; // Return empty if not configured
@@ -73,7 +74,7 @@ export async function searchYouTube(params: SearchParams): Promise<SearchResultI
  */
 export async function searchWeb(params: SearchParams): Promise<SearchResultItem[]> {
   try {
-    const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
+    const TAVILY_API_KEY = tavilyApiKey;
     if (!TAVILY_API_KEY) {
        console.warn('TAVILY_API_KEY is not configured.');
        return [];

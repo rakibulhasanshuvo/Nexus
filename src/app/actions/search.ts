@@ -6,10 +6,11 @@ import { resolveApiRoute } from '@/lib/api-router';
 // For now, these actions only do external API calls and use AI for parsing.
 import { GoogleGenAI } from '@google/genai';
 import { youtubeApiKey, tavilyApiKey } from '@/lib/env';
+import { createAIClient } from '@/lib/ai-utils';
 
 // Initialize SDK with a generic approach, but we will instantiate per-request to allow BYOK
-function getGenAIClient(apiKey: string) {
-  return new GoogleGenAI({ apiKey });
+export function getGenAIClient(apiKey: string) {
+  return createAIClient(GoogleGenAI, apiKey);
 }
 
 export interface SearchResultItem {

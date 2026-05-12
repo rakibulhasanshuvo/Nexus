@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { Plus, FileText, Send, X, Paperclip, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { validateFile, getSafeExtension } from '@/lib/file-validation';
 
 interface CreatePostProps {
   onPost: (content: string, file: { name: string; type: string; url: string; path?: string } | null) => void;
@@ -24,7 +25,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onPost }) => {
       let fileData = null;
 
       if (attachedFile?.file && supabase) {
-        const fileExt = attachedFile.file.name.split('.').pop();
+        const fileExt = getSafeExtension(attachedFile.file.type);
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
         const filePath = `${fileName}`;
 
@@ -78,6 +79,13 @@ const CreatePost: React.FC<CreatePostProps> = ({ onPost }) => {
          alert('File size must be less than 5MB.');
          return;
       }
+
+      const { valid, error } = validateFile(file);
+      if (!valid) {
+        alert(error || 'Invalid file type or extension.');
+        return;
+      }
+
       const objectUrl = URL.createObjectURL(file);
       setAttachedFile({ name: file.name, type: file.type, url: objectUrl, file: file });
     }

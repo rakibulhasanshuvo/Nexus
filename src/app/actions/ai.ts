@@ -296,9 +296,10 @@ Please completely regenerate the JSON based on the tweak request.`;
         }
       });
       return JSON.parse(response.text || '{}');
-    } catch (e: any) {
-      console.error("Failed to generate cheat sheet", e);
-      throw new Error(e.message || "Failed to generate cheat sheet.");
+    } catch (error: unknown) {
+      console.error("Failed to generate cheat sheet", error);
+      const errorMessage = (error instanceof Error && error.message) ? error.message : "Failed to generate cheat sheet.";
+      throw new Error(errorMessage);
     }
   }, userApiKey);
 }
@@ -324,9 +325,10 @@ CONSTRAINTS:
         contents: prompt,
       });
       return response.text || "TMA Outline generation failed.";
-    } catch (e: any) {
-      console.error("Failed to generate TMA outline", e);
-      throw new Error(e.message || "Failed to generate TMA outline.");
+    } catch (error: unknown) {
+      console.error("Failed to generate TMA outline", error);
+      const errorMessage = (error instanceof Error && error.message) ? error.message : "Failed to generate TMA outline.";
+      throw new Error(errorMessage);
     }
   }, userApiKey);
 }
@@ -421,9 +423,10 @@ Return exactly 3 resources in the required JSON format.`;
         }
       });
       return JSON.parse(response.text || '[]');
-    } catch (e: any) {
-      console.error("Failed to recommend resources", e);
-      throw new Error(e.message || "Failed to recommend resources.");
+    } catch (error: unknown) {
+      console.error("Failed to recommend resources", error);
+      const errorMessage = (error instanceof Error && error.message) ? error.message : "Failed to recommend resources.";
+      throw new Error(errorMessage);
     }
   }, userApiKey);
 }
@@ -451,9 +454,10 @@ export async function generateFlashcardsAction(
         config: { responseMimeType: "application/json" }
       });
       return JSON.parse(response.text || '[]');
-    } catch (e: any) {
-      console.error("Failed to generate flashcards", e);
-      throw new Error(e.message || "Failed to generate flashcards.");
+    } catch (error: unknown) {
+      console.error("Failed to generate flashcards", error);
+      const errorMessage = (error instanceof Error && error.message) ? error.message : "Failed to generate flashcards.";
+      throw new Error(errorMessage);
     }
   }, userApiKey);
 }

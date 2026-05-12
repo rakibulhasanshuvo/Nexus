@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * A hook that syncs with both Supabase and localStorage.
@@ -17,6 +18,7 @@ export function useSyncedData<T>(
   dataColumn?: string, // e.g., 'progress_data'
   localOnly: boolean = false
 ) {
+  const { user, isLoading: authLoading } = useAuth();
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [isInitializing, setIsInitializing] = useState(true);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -39,11 +41,9 @@ export function useSyncedData<T>(
       }
 
       // 2. If Supabase is available and we're not local-only, try fetching from there
-      if (!localOnly && supabase && table) {
+      if (!localOnly && supabase && table && !authLoading) {
         try {
-          const { data: userData, error: authError } = await supabase.auth.getUser();
-
-          if (!authError && userData.user) {
+          if (user) {
             let query = supabase
               .from(table)
               .select(dataColumn || '*');
@@ -54,7 +54,7 @@ export function useSyncedData<T>(
             }
 
             // If the table uniquely maps to a user via user_id, RLS will handle it, but we can also explicitly add it
-            query = query.eq('user_id', userData.user.id);
+            query = query.eq('user_id', user.id);
 
             const { data, error } = await query.single();
 
@@ -76,7 +76,7 @@ export function useSyncedData<T>(
     initialize();
 
     return () => { isMounted = false; };
-  }, [key, localOnly, table, idColumn, idValue, dataColumn]);
+  }, [key, localOnly, table, idColumn, idValue, dataColumn, user, authLoading]);
 
   // Setter function
   const setValue = useCallback((value: T | ((val: T) => T)) => {
@@ -92,14 +92,16 @@ export function useSyncedData<T>(
         window.dispatchEvent(new Event(`${key}-update`));
       }
 
-      // Save to Supabase (fire and forget for UI responsiveness)
-      if (!localOnly && supabase && table && !isInitializing) {
-        (async () => {
-          const { data: userData } = await supabase.auth.getUser();
-          if (userData?.user) {
+      // Save to Supabase (debounced to reduce network traffic)
+      if (!localOnly && supabase && table && !isInitializing && user) {
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+        }
 
+        debounceTimerRef.current = setTimeout(async () => {
+          try {
             const payload: any = {
-               user_id: userData.user.id,
+               user_id: user.id,
                updated_at: new Date().toISOString()
             };
 
@@ -111,19 +113,18 @@ export function useSyncedData<T>(
             }
 
             // Upsert the data
-            // We expect the tables to have a unique constraint that we can use for upsert.
-            // If idColumn is provided, the constraint is `user_id, ${idColumn}`.
-            // Otherwise, we expect the table to have a unique constraint on `user_id`.
             await supabase
               .from(table)
               .upsert(payload, { onConflict: idColumn ? `user_id,${idColumn}` : 'user_id' });
+          } catch (err) {
+            console.error(`Sync error for ${key}:`, err);
           }
-        })();
+        }, 1000);
       }
     } catch (error) {
       console.warn(`Error setting synced data for "${key}":`, error);
     }
-  }, [key, storedValue, isInitializing, localOnly, table, idColumn, idValue, dataColumn]);
+  }, [key, storedValue, isInitializing, localOnly, table, idColumn, idValue, dataColumn, user]);
 
   // Listen for local updates (cross-tab/component sync)
   useEffect(() => {

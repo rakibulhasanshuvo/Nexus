@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Save, User, BookOpen, UserCircle, Loader2 } from 'lucide-react';
+import { validateFile, getSafeExtension } from '@/lib/file-validation';
 
 // For now we'll mock the Supabase client until auth is fully implemented in a later phase.
 // In a real implementation we would import the initialized client.
@@ -30,10 +31,12 @@ export default function ProfilePage() {
     const file = e.target.files[0];
 
     // Validate file type and size
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file.');
+    const { valid, error } = validateFile(file);
+    if (!valid || !file.type.startsWith('image/')) {
+      alert(error || 'Please upload a valid image file.');
       return;
     }
+
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
       alert('File size must be less than 5MB.');
       return;
@@ -44,7 +47,7 @@ export default function ProfilePage() {
     // MOCK UPLOAD
     // Real implementation would look something like this:
     /*
-      const fileExt = file.name.split('.').pop();
+      const fileExt = getSafeExtension(file.type);
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 

@@ -52,7 +52,7 @@ export function safeJsonParse<T>(
 
     return defaultValue;
   } catch (e) {
-    console.error('Error parsing JSON from storage:', e);
+    // Safely swallow parsing errors to avoid leaking implementation details
     return defaultValue;
   }
 }

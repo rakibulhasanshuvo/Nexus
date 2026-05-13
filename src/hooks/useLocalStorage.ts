@@ -1,27 +1,36 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { safeJsonParse } from '@/lib/json-utils';
 
 /**
  * A hook that provides a type-safe interface to localStorage with SSR safety.
  * It also synchronizes state across different instances of the hook in the same app.
  */
-export function useLocalStorage<T>(key: string, initialValue: T) {
+export function useLocalStorage<T>(
+  key: string,
+  initialValue: T,
+  validator?: (data: unknown) => data is T
+) {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
   const [storedValue, setStoredValue] = useState<T>(initialValue);
+
+  const initialValueRef = useRef(initialValue);
+  const validatorRef = useRef(validator);
+
+  useEffect(() => {
+    initialValueRef.current = initialValue;
+    validatorRef.current = validator;
+  }, [initialValue, validator]);
 
   // Initialize value from localStorage on mount (SSR safety)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    try {
-      const item = window.localStorage.getItem(key);
-      if (item) {
-        queueMicrotask(() => setStoredValue(JSON.parse(item)));
-      }
-    } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error);
+    const item = window.localStorage.getItem(key);
+    if (item) {
+      queueMicrotask(() => setStoredValue(safeJsonParse(item, initialValueRef.current, validatorRef.current)));
     }
   }, [key]);
 
@@ -48,25 +57,21 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
 
   // Synchronize across components/tabs
   useEffect(() => {
-    const handleUpdate = () => {
+    const handleUpdate = (e?: StorageEvent) => {
       if (typeof window === "undefined") return;
+      if (e && e.key !== key) return;
+
       const item = window.localStorage.getItem(key);
       if (item) {
-        try {
-          queueMicrotask(() => setStoredValue(JSON.parse(item)));
-        } catch (e) {
-          console.error(e);
-        }
+        queueMicrotask(() => setStoredValue(safeJsonParse(item, initialValueRef.current, validatorRef.current)));
       }
     };
 
-    window.addEventListener(`${key}-update`, handleUpdate);
-    window.addEventListener('storage', (e) => {
-      if (e.key === key) handleUpdate();
-    });
+    window.addEventListener(`${key}-update`, handleUpdate as any);
+    window.addEventListener('storage', handleUpdate);
 
     return () => {
-      window.removeEventListener(`${key}-update`, handleUpdate);
+      window.removeEventListener(`${key}-update`, handleUpdate as any);
       window.removeEventListener('storage', handleUpdate);
     };
   }, [key]);

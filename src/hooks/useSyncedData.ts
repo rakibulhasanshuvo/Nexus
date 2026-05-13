@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { safeJsonParse } from '@/lib/json-utils';
 
 /**
  * A hook that syncs with both Supabase and localStorage.
@@ -16,12 +17,22 @@ export function useSyncedData<T>(
   idColumn?: string, // e.g., 'course_id'
   idValue?: string, // e.g., '0533-101'
   dataColumn?: string, // e.g., 'progress_data'
-  localOnly: boolean = false
+  localOnly: boolean = false,
+  validator?: (data: unknown) => data is T
 ) {
   const { user, isLoading: authLoading } = useAuth();
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [isInitializing, setIsInitializing] = useState(true);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Use refs to avoid re-running effects if initialValue or validator change references
+  const initialValueRef = useRef(initialValue);
+  const validatorRef = useRef(validator);
+
+  useEffect(() => {
+    initialValueRef.current = initialValue;
+    validatorRef.current = validator;
+  }, [initialValue, validator]);
 
   // Initialize value from Supabase or localStorage on mount
   useEffect(() => {
@@ -31,13 +42,9 @@ export function useSyncedData<T>(
       if (typeof window === "undefined") return;
 
       // 1. Try to load from localStorage first for immediate UI render (optimistic)
-      try {
-        const item = window.localStorage.getItem(key);
-        if (item && isMounted) {
-          setStoredValue(JSON.parse(item));
-        }
-      } catch (error) {
-        console.warn(`Error reading localStorage key "${key}":`, error);
+      const item = window.localStorage.getItem(key);
+      if (item && isMounted) {
+        setStoredValue(safeJsonParse(item, initialValueRef.current, validatorRef.current));
       }
 
       // 2. If Supabase is available and we're not local-only, try fetching from there
@@ -128,25 +135,21 @@ export function useSyncedData<T>(
 
   // Listen for local updates (cross-tab/component sync)
   useEffect(() => {
-    const handleUpdate = () => {
+    const handleUpdate = (e?: StorageEvent) => {
       if (typeof window === "undefined") return;
+      if (e && e.key !== key) return;
+
       const item = window.localStorage.getItem(key);
       if (item) {
-        try {
-          setStoredValue(JSON.parse(item));
-        } catch (e) {
-          console.error(e);
-        }
+        setStoredValue(safeJsonParse(item, initialValueRef.current, validatorRef.current));
       }
     };
 
-    window.addEventListener(`${key}-update`, handleUpdate);
-    window.addEventListener('storage', (e) => {
-      if (e.key === key) handleUpdate();
-    });
+    window.addEventListener(`${key}-update`, handleUpdate as any);
+    window.addEventListener('storage', handleUpdate);
 
     return () => {
-      window.removeEventListener(`${key}-update`, handleUpdate);
+      window.removeEventListener(`${key}-update`, handleUpdate as any);
       window.removeEventListener('storage', handleUpdate);
     };
   }, [key]);

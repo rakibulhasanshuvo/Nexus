@@ -73,7 +73,7 @@ export function useSyncedData<T>(
             }
           }
         } catch (error) {
-          console.warn(`Supabase fetch failed for ${key}, using local data`, error);
+          // Safely swallow errors to avoid leaking implementation details
         }
       }
 
@@ -124,12 +124,12 @@ export function useSyncedData<T>(
               .from(table)
               .upsert(payload, { onConflict: idColumn ? `user_id,${idColumn}` : 'user_id' });
           } catch (err) {
-            console.error(`Sync error for ${key}:`, err);
+            // Safely swallow errors to avoid leaking implementation details
           }
         }, 1000);
       }
     } catch (error) {
-      console.warn(`Error setting synced data for "${key}":`, error);
+      // Safely swallow errors to avoid leaking implementation details
     }
   }, [key, storedValue, isInitializing, localOnly, table, idColumn, idValue, dataColumn, user]);
 

@@ -26,11 +26,15 @@ export function useLocalStorage<T>(
 
   // Initialize value from localStorage on mount (SSR safety)
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    try {
+      if (typeof window === "undefined") return;
 
-    const item = window.localStorage.getItem(key);
-    if (item) {
-      queueMicrotask(() => setStoredValue(safeJsonParse(item, initialValueRef.current, validatorRef.current)));
+      const item = window.localStorage.getItem(key);
+      if (item) {
+        queueMicrotask(() => setStoredValue(safeJsonParse(item, initialValueRef.current, validatorRef.current)));
+      }
+    } catch (error) {
+      // Safely swallow storage errors to avoid leaking implementation details
     }
   }, [key]);
 
@@ -51,7 +55,7 @@ export function useLocalStorage<T>(
         window.dispatchEvent(new Event(`${key}-update`));
       }
     } catch (error) {
-      console.warn(`Error setting localStorage key "${key}":`, error);
+      // Safely swallow storage errors to avoid leaking implementation details
     }
   }, [key, storedValue]);
 

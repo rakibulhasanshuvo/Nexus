@@ -1,4 +1,4 @@
-import { AI_MODELS, AIModelType } from './ai-config';
+import { AI_MODELS, type AIModelType } from './ai-config.ts';
 
 /**
  * Retrieves the appropriate API key to use.
@@ -11,7 +11,7 @@ export async function getApiKey(userApiKey?: string | null): Promise<string> {
     return userApiKey.trim();
   }
 
-  const { getAvailableGeminiKey } = await import('./env');
+  const { getAvailableGeminiKey } = await import('./env.ts');
   const serverKey = await getAvailableGeminiKey();
 
   return serverKey;

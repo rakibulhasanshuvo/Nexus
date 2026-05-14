@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { generateCheatSheetAction, generateTMAOutlineAction, findStructuredTutorialsAction } from '@/app/actions/ai';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
@@ -145,6 +145,10 @@ const ResourceFinderInner: React.FC = () => {
   const semester = COURSE_MAPPING[selectedSemester];
   const courseDetail = COURSE_DETAILS[selectedCourse];
 
+  const selectedCourseName = useMemo(() => {
+    return semester?.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
+  }, [semester, selectedCourse]);
+
   const modules = selectedCourse && courseDetail ? courseDetail.topics.map((topic, idx) => ({
     id: `${selectedCourse}-unit-${idx + 1}`,
     courseId: selectedCourse,
@@ -177,7 +181,7 @@ const ResourceFinderInner: React.FC = () => {
     if (cheatSheets[moduleId] && !isTweak) return;
     setLoadingActionId(`cheat-${moduleId}`);
     try {
-      const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
+      const courseName = selectedCourseName;
 
       const previousData = isTweak ? cheatSheets[moduleId] : undefined;
       const currentTweak = isTweak ? tweakPrompt : undefined;
@@ -212,7 +216,7 @@ const ResourceFinderInner: React.FC = () => {
     const prompt = userContexts[moduleId] || "Analyze standard TMA questions for this topic";
     setLoadingActionId(`tma-${moduleId}`);
     try {
-      const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
+      const courseName = selectedCourseName;
       // Using Secure Next.js Server Action
       const result = await generateTMAOutlineAction(courseName, unitTitle, prompt);
       setTmaOutlines(prev => ({ ...prev, [moduleId]: result }));
@@ -231,7 +235,7 @@ const ResourceFinderInner: React.FC = () => {
     setLoadingPhase('Scanning the web via Tavily...');
 
     try {
-      const courseName = semester.courses.find(c => c.id === selectedCourse)?.name || selectedCourse;
+      const courseName = selectedCourseName;
       const pref = tutorialPref[moduleId] || "Best Bangla Tutorials from any platform";
       // Using Secure Next.js Server Action
       const result = await findStructuredTutorialsAction(courseName, unitTitle, topics, pref);
